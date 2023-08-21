@@ -35,7 +35,6 @@ function singleFile(): Plugin {
     name: "vite:single-file",
     enforce: "post",
     generateBundle(options, bundle) {
-      console.log(bundle)
       let html = bundle["index.html"] as any;
       let js = bundle["index.js"] as any;
 
