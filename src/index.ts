@@ -52,6 +52,7 @@ interface GameObject {
   direction: Direction;
   horde?: Horde;
   influenceRadius: number;
+  hitpoints: number;
   shadow?: boolean;
   ai?: boolean;
   follower?: boolean;
@@ -178,7 +179,9 @@ function colorToRgb(color: string): number {
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, 1, 1);
   let imageData = ctx.getImageData(0, 0, 1, 1);
-  return imageData.data[0] << 16 | imageData.data[1] << 8 | imageData.data[2];
+  return (
+    (imageData.data[0] << 16) | (imageData.data[1] << 8) | imageData.data[2]
+  );
 }
 
 function generateHordePalette(hue: number) {
@@ -250,7 +253,16 @@ function updateCollisions() {
   for (let object of objects) {
     for (let other of objects) {
       if (object === other) continue;
-      if (doCirclesIntersect(object.x, object.y, object.influenceRadius, other.x, other.y, other.influenceRadius)) {
+      if (
+        doCirclesIntersect(
+          object.x,
+          object.y,
+          object.influenceRadius,
+          other.x,
+          other.y,
+          other.influenceRadius,
+        )
+      ) {
         if (object.horde && !other.horde && other.follower) {
           object.horde.add(other);
         }
@@ -260,14 +272,26 @@ function updateCollisions() {
 }
 
 function areObjectsInProximity(a: GameObject, b: GameObject): boolean {
-  return doCirclesIntersect(a.x, a.y, a.influenceRadius, b.x, b.y, b.influenceRadius);
+  return doCirclesIntersect(
+    a.x,
+    a.y,
+    a.influenceRadius,
+    b.x,
+    b.y,
+    b.influenceRadius,
+  );
 }
 
 async function updateObjectAI(object: GameObject) {
-  if (object.horde && areObjectsInProximity(object.horde.leader, object)) {
+  if (
+    object.horde &&
+    object !== object.horde.leader &&
+    areObjectsInProximity(object.horde.leader, object)
+  ) {
     // No need to do anything if we're already inside the horde's influence radius
     return;
   }
+
   delete object.ai;
   let target = object.horde ? object.horde.leader : object;
   let radius = object.horde ? randomInt(50) : randomInt(100);
@@ -277,7 +301,14 @@ async function updateObjectAI(object: GameObject) {
   object.ai = true;
 }
 
-function doCirclesIntersect(x1: number, y1: number, r1: number, x2: number, y2: number, r2: number): boolean {
+function doCirclesIntersect(
+  x1: number,
+  y1: number,
+  r1: number,
+  x2: number,
+  y2: number,
+  r2: number,
+): boolean {
   return Math.hypot(x1 - x2, y1 - y2) <= r1 + r2;
 }
 
@@ -325,7 +356,7 @@ function render() {
     ctx.beginPath();
     ctx.arc(object.x, object.y, object.influenceRadius, 0, TWO_PI);
     ctx.fillStyle = object.horde?.color ?? `rgba(255, 255, 255, 20%)`;
-    ctx.fill();
+    //ctx.fill();
     ctx.restore();
   }
 
@@ -381,6 +412,7 @@ class Horde {
   leader: GameObject;
   objects: GameObject[] = [];
   color: string;
+  palette: HTMLCanvasElement;
 
   constructor(leader: GameObject) {
     let hue = randomInt(360);
@@ -388,7 +420,11 @@ class Horde {
     this.leader = leader;
     this.objects.push(leader);
     this.color = `hsla(${hue}, 50%, 40%, 10%)`;
-    setSpriteSource(this.leader, generateHordePalette(hue));
+    this.palette = generateHordePalette(hue);
+
+    leader.horde = this;
+    leader.holding = { ...sprites.flag, source: this.palette };
+    setSpriteSource(this.leader, this.palette);
   }
 
   add(object: GameObject) {
@@ -397,6 +433,20 @@ class Horde {
     object.speed = this.leader.speed;
     setSpriteSource(object, this.leader.palette!);
   }
+
+  remove(object: GameObject) {
+    removeFromArray(this.objects, object);
+    delete object.palette;
+    delete object.horde;
+    for (let sprite of object.sprite) {
+      delete sprite.source;
+    }
+  }
+}
+
+function removeFromArray<T>(array: T[], element: T) {
+  let index = array.indexOf(element);
+  if (index >= 0) array.splice(index, 1);
 }
 
 /**
@@ -421,8 +471,7 @@ let player = GameObject({
   direction: Direction.East,
 });
 
-player.horde = new Horde(player);
-hordes.push(player.horde);
+hordes.push(new Horde(player));
 
 /**
  * Convert canvas coordinates to world coordinates. Accounting for camera
@@ -547,7 +596,10 @@ async function walk(object: GameObject, path: Point[]) {
   if (object.horde?.leader === object) {
     for (let follower of object.horde.objects) {
       if (follower !== object) {
-        walk(follower, path.map(p => jitter(p, 20)));
+        walk(
+          follower,
+          path.map(p => jitter(p, 20)),
+        );
       }
     }
   }
@@ -611,7 +663,17 @@ function lerp2(p1: Point, p2: Point, t: number): Point {
 function GameObject(init: Partial<GameObject>): GameObject {
   if (init.palette && init.sprite)
     init.sprite = init.sprite.map(s => ({ ...s, source: init.palette }));
-  return { x: 0, y: 0, z: 0, direction: 0, speed: 0, influenceRadius: 0, sprite: [], ...init };
+  return {
+    x: 0,
+    y: 0,
+    z: 0,
+    direction: 0,
+    speed: 0,
+    influenceRadius: 0,
+    hitpoints: 0,
+    sprite: [],
+    ...init,
+  };
 }
 
 let cursor: Point | undefined;
@@ -647,8 +709,17 @@ function throw_(thrower: GameObject, point: Point) {
     flip: point.x < thrower.x,
   };
 
-  point.x += randomInt(5) - 2.5;
-  point.y += randomInt(5) - 2.5;
+  let jitter = 10;
+
+  point = {
+    x: point.x + randomInt(jitter * 2) - jitter,
+    y: point.y + randomInt(jitter * 2) - jitter,
+  };
+
+  // TODO: Enforce max throwing distance
+
+  // TODO: Figure out how to do collisions. Should they be realtime or should
+  // it just be computed based on where the mouse was when clicked?
 
   let distance = getDistanceBetweenPoints(thrower, point);
   let duration = distance * 3;
@@ -662,6 +733,19 @@ function throw_(thrower: GameObject, point: Point) {
         : sprites.javelin_3;
   };
   let done = () => {
+    let objects = getObjectsInCircle(p.x, p.y, 10);
+
+    for (let object of objects) {
+      damage(object, 1);
+    }
+
+    if (objects.length) {
+      decorations.push(Decoration({
+        x: p.x,
+        y: p.y,
+        sprites: [randomElement(strip(sprites.blood, 5, 5))],
+      }))
+    }
     projectiles.delete(p);
     decorations.push(
       Decoration({
@@ -674,6 +758,22 @@ function throw_(thrower: GameObject, point: Point) {
   tween(p, point, duration, easeInOutLinear);
   animate({ duration, step, done });
   projectiles.add(p);
+}
+
+function damage(object: GameObject, amount: number) {
+  // Get scared when hit
+  if (object.horde) {
+    object.horde.remove(object);
+  }
+
+  // Die
+  if ((object.hitpoints -= amount) <= 0) {
+    despawn(object);
+  }
+}
+
+function getObjectsInCircle(x: number, y: number, radius: number): GameObject[] {
+  return objects.filter(object => doCirclesIntersect(x, y, radius, object.x, object.y, 3));
 }
 
 function Decoration(init: Partial<Decoration>): Decoration {
@@ -723,14 +823,27 @@ function Horse() {
 }
 
 function Rider() {
+  return GameObject({
+    sprite: strip(sprites.rider, 16, 16),
+    influenceRadius: 10,
+    riding: Horse().sprite,
+    follower: true,
+    shadow: true,
+    ai: true,
+    speed: 10,
+    hitpoints: 3,
+  });
+}
+
+function Leader() {
   let palette = randomElement(palettes);
   let flag = { ...sprites.flag, source: palette };
   return GameObject({
     sprite: strip(sprites.rider, 16, 16),
-    influenceRadius: 10,
+    influenceRadius: 20,
     palette,
     riding: Horse().sprite,
-    holding: randomElement([flag, undefined, undefined]),
+    holding: flag,
     follower: true,
     shadow: true,
     ai: true,
@@ -905,6 +1018,14 @@ function init() {
     spawn(Horse(), randomInt(width), randomInt(height));
     spawn(Rider(), randomInt(width), randomInt(height));
   }
+
+  for (let i = 0; i < 3; i++) {
+    let leader = Leader();
+    let horde = new Horde(leader);
+    hordes.push(horde);
+    spawn(leader, randomInt(width), randomInt(height));
+  }
+
   resize();
   onresize = resize;
   requestAnimationFrame(loop);

@@ -43,3 +43,11 @@ Simplifications:
 - Projectile hits can de-influence horde members (timer before can rejoin original horde)
 - Horde combat essentially involves a bit of javelin and a bit of pushing/chasing.
 - Uninfluenced riders will try to escape large hordes
+
+Gameplay:
+- Wolves are threats
+- Banners for healing?
+- Banners for influence buffs?
+- Banners for trading
+- Banners for finding resources
+
