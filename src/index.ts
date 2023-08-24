@@ -175,9 +175,12 @@ const palettes = [
   recolor({ [COLOR_RIDER]: 0x3f3f74, [COLOR_RIDER_ALT]: 0x5b6ee1 }),
 ];
 
+let sampleCanvas = document.createElement("canvas");
+let sampleCtx = sampleCanvas.getContext("2d")!;
+
 function colorToRgb(color: string): number {
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, 1, 1);
+  sampleCtx.fillStyle = color;
+  sampleCtx.fillRect(0, 0, 1, 1);
   let imageData = ctx.getImageData(0, 0, 1, 1);
   return (
     (imageData.data[0] << 16) | (imageData.data[1] << 8) | imageData.data[2]
