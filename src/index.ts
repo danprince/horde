@@ -443,6 +443,12 @@ class Horde {
       delete sprite.source;
     }
   }
+
+  disband() {
+    for (let object of this.objects) {
+      this.remove(object);
+    }
+  }
 }
 
 function removeFromArray<T>(array: T[], element: T) {
@@ -750,14 +756,19 @@ function throw_(thrower: GameObject, point: Point) {
 
 function damage(object: GameObject, amount: number) {
   // Get scared when hit
-  if (object.horde) {
+  if (object.horde && object.horde.leader !== object) {
     object.horde.remove(object);
   }
 
   // Die
   if ((object.hitpoints -= amount) <= 0) {
-    despawn(object);
+    die(object);
   }
+}
+
+function die(object: GameObject) {
+  object.horde.disband();
+  despawn(object);
 }
 
 function getObjectsInCircle(x: number, y: number, radius: number): GameObject[] {
