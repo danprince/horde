@@ -41,7 +41,7 @@ function singleFile(): Plugin {
       if (html.type === "asset") {
         html.source = html.source
           .replace(/<script.*<\/script>/, "")
-          .replace("</body>", () => `<script>${js.code}</script>`)
+          .replace("</body>", () => `<script type=module>${js.code}</script>`)
           .replace(/\n+/g, "");
       }
 
