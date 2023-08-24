@@ -81,6 +81,7 @@ const hordes: Horde[] = [];
 const decorations: Decoration[] = [];
 const projectiles = new Set<Projectile>();
 const camera = { x: 0, y: 0, z: 2 };
+let player: GameObject;
 
 function resize() {
   const scale = Math.min(innerWidth / width, innerHeight / height);
@@ -163,17 +164,7 @@ const COLOR_RIDER_ALT = 0x8a6f30;
 const COLOR_BEARD = 0x222034;
 const COLOR_FLAG_ALT = 0x9b9947;
 
-// prettier-ignore
-const palettes = [
-  s,
-  recolor({ [COLOR_HORSE]: 0x7e8687, [COLOR_HORSE_ALT]: 0x595e5f }),
-  recolor({ [COLOR_HORSE]: 0x8a6f30, [COLOR_HORSE_ALT]: 0x7d6429, }),
-  recolor({ [COLOR_HORSE]: 0xcbdbfc, [COLOR_HORSE_ALT]: 0xa2b5dc, [COLOR_MANE]: 0x7e8687, [COLOR_RIDER]: 0xac3232 }),
-  recolor({ [COLOR_HORSE]: 0x45283c, [COLOR_HORSE_ALT]: 0x222034, [COLOR_MANE]: 0x222034 }),
-  recolor({ [COLOR_RIDER]: 0x9b510d, [COLOR_BEARD]: 0xcbdbfc }),
-  recolor({ [COLOR_RIDER]: 0x8a6f30, }),
-  recolor({ [COLOR_RIDER]: 0x3f3f74, [COLOR_RIDER_ALT]: 0x5b6ee1 }),
-];
+let palettes: Array<HTMLImageElement | HTMLCanvasElement> = [s];
 
 function colorToRgb(color: string): number {
   ctx.fillStyle = color;
@@ -469,19 +460,6 @@ function screenToCanvas(screenX: number, screenY: number): Point {
   let y = ((screenY - rect.y) / (rect.height / height)) | 0;
   return { x, y };
 }
-
-let player = GameObject({
-  x: 100,
-  y: 100,
-  speed: 30,
-  sprite: strip(sprites.rider, 16, 16),
-  riding: strip(sprites.horse, 16, 16),
-  shadow: true,
-  influenceRadius: 30,
-  direction: Direction.East,
-});
-
-hordes.push(new Horde(player));
 
 /**
  * Convert canvas coordinates to world coordinates. Accounting for camera
@@ -1019,10 +997,34 @@ function decorate() {
 }
 
 function init() {
+  palettes.push(
+    recolor({ [COLOR_HORSE]: 0x7e8687, [COLOR_HORSE_ALT]: 0x595e5f }),
+    recolor({ [COLOR_HORSE]: 0x8a6f30, [COLOR_HORSE_ALT]: 0x7d6429, }),
+    recolor({ [COLOR_HORSE]: 0xcbdbfc, [COLOR_HORSE_ALT]: 0xa2b5dc, [COLOR_MANE]: 0x7e8687, [COLOR_RIDER]: 0xac3232 }),
+    recolor({ [COLOR_HORSE]: 0x45283c, [COLOR_HORSE_ALT]: 0x222034, [COLOR_MANE]: 0x222034 }),
+    recolor({ [COLOR_RIDER]: 0x9b510d, [COLOR_BEARD]: 0xcbdbfc }),
+    recolor({ [COLOR_RIDER]: 0x8a6f30, }),
+    recolor({ [COLOR_RIDER]: 0x3f3f74, [COLOR_RIDER_ALT]: 0x5b6ee1 }),
+  )
+
+  player = GameObject({
+    x: 100,
+    y: 100,
+    speed: 30,
+    sprite: strip(sprites.rider, 16, 16),
+    riding: strip(sprites.horse, 16, 16),
+    shadow: true,
+    influenceRadius: 30,
+    direction: Direction.East,
+  });
+
+  hordes.push(new Horde(player));
+
   decorate();
   spawn(player);
   camera.x = player.x;
   camera.y = player.y;
+
   for (let i = 0; i < 8; i++) {
     spawn(Horse(), randomInt(width), randomInt(height));
     spawn(Rider(), randomInt(width), randomInt(height));
@@ -1040,4 +1042,5 @@ function init() {
   requestAnimationFrame(loop);
 }
 
-init();
+s.onload = init;
+if (s.width) init();
