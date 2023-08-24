@@ -51,3 +51,38 @@ Gameplay:
 - Banners for trading
 - Banners for finding resources
 
+What individual systems are there to implement?
+- Palette swapping API
+  - Palettes should be data based, then recolored from a cache
+- Canvas setup
+- Sprite rendering with pivot
+- Text rendering
+- World grid
+- World architecture (deferred loading/simulation)
+- Game object design
+  - Classes? Raw data?
+  - Should projectiles/decorations be game objects?
+  - Pathing + goals
+- Sprites
+  - Animated sprites vs static?
+  - Make it easy to flip
+- Animations
+- Particle effects
+- Tags vs flags
+- Camera + zoom + viewport
+  - screenToWorld
+- Random helpers
+  - randomInt(min, max)
+  - randomElement(array)
+- Geometry helpers
+  - isPointInRect
+  - isPointInCircle
+  - isCircleInCircle
+  - getDirectionBetweenPoints
+  - getDistanceBetweenPoints
+- Easing helpers
+- Misc helpers
+  - removeFromArray (just use sets?)
+  - easings
+  - lerp
+- Horde architecture
