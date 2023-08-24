@@ -175,12 +175,9 @@ const palettes = [
   recolor({ [COLOR_RIDER]: 0x3f3f74, [COLOR_RIDER_ALT]: 0x5b6ee1 }),
 ];
 
-let sampleCanvas = document.createElement("canvas");
-let sampleCtx = sampleCanvas.getContext("2d")!;
-
 function colorToRgb(color: string): number {
-  sampleCtx.fillStyle = color;
-  sampleCtx.fillRect(0, 0, 1, 1);
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 1, 1);
   let imageData = ctx.getImageData(0, 0, 1, 1);
   return (
     (imageData.data[0] << 16) | (imageData.data[1] << 8) | imageData.data[2]
@@ -198,19 +195,29 @@ function generateHordePalette(hue: number) {
 function recolor(mappings: Record<number, number>) {
   let c = document.createElement("canvas");
   let ctx = c.getContext("2d")!;
-  ctx.drawImage(s, 0, 0);
-  let imageData = ctx.getImageData(0, 0, s.width, s.height);
-  for (let i = 0; i < imageData.data.length; i++) {
-    let src =
-      (imageData.data[i] << 16) |
-      (imageData.data[i + 1] << 8) |
-      imageData.data[i + 2];
-    let dst = mappings[src] || src;
-    imageData.data[i] = dst >> 16;
-    imageData.data[i + 1] = (dst >> 8) & 0xff;
-    imageData.data[i + 2] = dst & 0xff;
+
+  function ready() {
+    ctx.drawImage(s, 0, 0);
+    let imageData = ctx.getImageData(0, 0, s.width, s.height);
+    for (let i = 0; i < imageData.data.length; i++) {
+      let src =
+        (imageData.data[i] << 16) |
+        (imageData.data[i + 1] << 8) |
+        imageData.data[i + 2];
+      let dst = mappings[src] || src;
+      imageData.data[i] = dst >> 16;
+      imageData.data[i + 1] = (dst >> 8) & 0xff;
+      imageData.data[i + 2] = dst & 0xff;
+    }
+    ctx.putImageData(imageData, 0, 0);
   }
-  ctx.putImageData(imageData, 0, 0);
+
+  if (!s.width) {
+    s.onload = ready;
+  } else {
+    ready();
+  }
+
   return c;
 }
 
