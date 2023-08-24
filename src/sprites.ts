@@ -18,6 +18,6 @@ export const javelin_4 = { pivot: { x: 3, y: 6, }, y: 68, url, w: 7, h: 6, x: 52
 export const rock_1 = { y: 60, url, w: 18, h: 20, x: 89, };
 export const rock_2 = { y: 72, url, w: 10, h: 8, x: 108, };
 export const rock_3 = { y: 67, url, w: 15, h: 13, x: 119, };
-export const rock_4 = { y: 69, url, w: 8, h: 11, x: 135, };
+export const rock_4 = { y: 69, url, w: 10, h: 11, x: 134, };
 export const rock_5 = { y: 68, url, w: 16, h: 12, x: 144, };
 export const unit_indicator = { pivot: { x: 7, y: 4, }, y: 48, url, w: 16, h: 9, x: 16, };

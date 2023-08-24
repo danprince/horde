@@ -59,6 +59,19 @@ interface GameObject {
   palette?: HTMLImageElement | HTMLCanvasElement;
 }
 
+enum Direction {
+  North = 0,
+  NorthEast = 1,
+  East = 2,
+  SouthEast = 3,
+  South = 4,
+  SouthWest = 5,
+  West = 6,
+  NorthWest = 7,
+}
+
+const TWO_PI = Math.PI * 2;
+
 const ctx = c.getContext("2d")!;
 const width = (c.width = 400);
 const height = (c.height = 225);
@@ -144,9 +157,10 @@ interface Rectangle {
 const COLOR_HORSE = 0x694636;
 const COLOR_HORSE_ALT = 0x503528;
 const COLOR_MANE = 0x45283c;
-const COLOR_RIDER = 0x8c8a33;
+const COLOR_RIDER = 0x8a8733;
 const COLOR_RIDER_ALT = 0x8a6f30;
 const COLOR_BEARD = 0x222034;
+const COLOR_FLAG_ALT = 0x9b9947;
 
 // prettier-ignore
 const palettes = [
@@ -159,6 +173,21 @@ const palettes = [
   recolor({ [COLOR_RIDER]: 0x8a6f30, }),
   recolor({ [COLOR_RIDER]: 0x3f3f74, [COLOR_RIDER_ALT]: 0x5b6ee1 }),
 ];
+
+function colorToRgb(color: string): number {
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 1, 1);
+  let imageData = ctx.getImageData(0, 0, 1, 1);
+  return imageData.data[0] << 16 | imageData.data[1] << 8 | imageData.data[2];
+}
+
+function generateHordePalette(hue: number) {
+  return recolor({
+    [COLOR_RIDER]: colorToRgb(`hsl(${hue}, 40%, 40%)`),
+    [COLOR_RIDER_ALT]: colorToRgb(`hsl(${hue + 50}, 30%, 30%)`),
+    [COLOR_FLAG_ALT]: colorToRgb(`hsl(${hue}, 30%, 50%)`),
+  });
+}
 
 function recolor(mappings: Record<number, number>) {
   let c = document.createElement("canvas");
@@ -193,8 +222,8 @@ function update(dt: number) {
   updateAI();
   updateDecorations(dt);
   updateCollisions();
-  camera.x = player.x | 0;
-  camera.y = player.y | 0;
+  camera.x = lerp(camera.x, player.x, 0.07) | 0;
+  camera.y = lerp(camera.y, player.y, 0.07) | 0;
 }
 
 function randomPoint(): Point {
@@ -236,7 +265,6 @@ function areObjectsInProximity(a: GameObject, b: GameObject): boolean {
 
 async function updateObjectAI(object: GameObject) {
   if (object.horde && areObjectsInProximity(object.horde.leader, object)) {
-    console.log("object is in horde alreay")
     // No need to do anything if we're already inside the horde's influence radius
     return;
   }
@@ -335,20 +363,39 @@ function renderObject(object: GameObject) {
 export let easeInOut = (t: number) =>
   (t *= 2) < 1 ? 0.5 * t * t : -0.5 * (--t * (t - 2) - 1);
 
+type SpriteSheet = HTMLImageElement | HTMLCanvasElement;
+
+function setSpriteSource(object: GameObject, source: SpriteSheet) {
+  object.palette = source;
+
+  object.sprite = object.sprite.map(spr => {
+    return { ...spr, source: object.palette };
+  });
+
+  if (object.holding) {
+    object.holding = { ...object.holding, source: object.palette };
+  }
+}
+
 class Horde {
   leader: GameObject;
   objects: GameObject[] = [];
-  color = `hsla(${randomInt(360)}, 80%, 50%, 20%)`;
+  color: string;
 
   constructor(leader: GameObject) {
+    let hue = randomInt(360);
+
     this.leader = leader;
     this.objects.push(leader);
+    this.color = `hsla(${hue}, 50%, 40%, 10%)`;
+    setSpriteSource(this.leader, generateHordePalette(hue));
   }
 
   add(object: GameObject) {
     this.objects.push(object);
     object.horde = this;
     object.speed = this.leader.speed;
+    setSpriteSource(object, this.leader.palette!);
   }
 }
 
@@ -371,6 +418,7 @@ let player = GameObject({
   riding: strip(sprites.horse, 16, 16),
   shadow: true,
   influenceRadius: 30,
+  direction: Direction.East,
 });
 
 player.horde = new Horde(player);
@@ -389,19 +437,6 @@ function screenToWorld(x: number, y: number): Point {
   let canvasPos = screenToCanvas(x, y);
   return canvasToWorld(canvasPos.x, canvasPos.y);
 }
-
-enum Direction {
-  North = 0,
-  NorthEast = 1,
-  East = 2,
-  SouthEast = 3,
-  South = 4,
-  SouthWest = 5,
-  West = 6,
-  NorthWest = 7,
-}
-
-const TWO_PI = Math.PI * 2;
 
 function getBestDirectionBetweenPoints(p1: Point, p2: Point): Direction {
   let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) + Math.PI / 2;
@@ -475,7 +510,7 @@ function tween<T extends Record<string, any>>(
         let k = easing(t);
         for (let key in values) {
           // @ts-ignore
-          target[key] = initial[key] + k * (values[key] - initial[key]);
+          target[key] = (initial[key] + k * (values[key] - initial[key])) | 0;
         }
       },
     }),
@@ -591,12 +626,19 @@ onpointerdown = (event: PointerEvent) => {
 
 onkeydown = (event: KeyboardEvent) => {
   if (event.key === " ") {
-    if (cursor) playerThrow(cursor);
+    playerThrow();
   }
 };
 
-function playerThrow(point: Point) {
-  let thrower = player;
+function playerThrow() {
+  if (!cursor) return;
+
+  for (let object of player.horde!.objects) {
+    throw_(object, cursor);
+  }
+}
+
+function throw_(thrower: GameObject, point: Point) {
   let p: Projectile = {
     x: thrower.x,
     y: thrower.y,
@@ -604,11 +646,9 @@ function playerThrow(point: Point) {
     sprite: sprites.javelin_1,
     flip: point.x < thrower.x,
   };
-  point.x += Math.random() - 0.5;
-  point.y += Math.random() - 0.5;
 
-  // Looks weird if the thrower rotates whilst riding
-  // thrower.direction = getBestDirectionBetweenPoints(thrower, point);
+  point.x += randomInt(5) - 2.5;
+  point.y += randomInt(5) - 2.5;
 
   let distance = getDistanceBetweenPoints(thrower, point);
   let duration = distance * 3;
@@ -655,6 +695,7 @@ async function playerWalkTo(point: Point) {
     y: point.y,
     sprite: [sprites.flag],
     shadow: true,
+    palette: player.palette,
   });
   spawn(target);
   waypoints = pathToWaypoints(player, path);
@@ -682,12 +723,14 @@ function Horse() {
 }
 
 function Rider() {
+  let palette = randomElement(palettes);
+  let flag = { ...sprites.flag, source: palette };
   return GameObject({
     sprite: strip(sprites.rider, 16, 16),
     influenceRadius: 10,
-    palette: randomElement(palettes),
+    palette,
     riding: Horse().sprite,
-    holding: randomElement([sprites.flag, undefined, undefined]),
+    holding: randomElement([flag, undefined, undefined]),
     follower: true,
     shadow: true,
     ai: true,
@@ -856,6 +899,8 @@ function decorate() {
 function init() {
   decorate();
   spawn(player);
+  camera.x = player.x;
+  camera.y = player.y;
   for (let i = 0; i < 8; i++) {
     spawn(Horse(), randomInt(width), randomInt(height));
     spawn(Rider(), randomInt(width), randomInt(height));

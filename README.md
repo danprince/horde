@@ -11,7 +11,8 @@ The game always starts as a single rider, playing in a (potentially infinite) wo
   - Meet traders
   - Visit villages of yurts
 - Currencies?
-  - Silver
+  - Silver/taels
+  - Silk
   - Reputation
   - Food
   - Horde size
@@ -28,3 +29,17 @@ Could technically reduce the sprite count from 8 to 5, then flip for the missing
 Figure out how to model the world. Square cells? Square cells with offsets to make them less grid like?
 
 Move everyone with dijkstra? Create a dijkstra map from target back to all units, then just have everyone go downhill?
+
+Architecture?
+- Improved/cancellable pathing
+
+Simplifications:
+- Horde influence is defined by leader radius
+- As horde grows leader's influence grows
+- When leader moves other horde members path to point near leader's destination
+- If uninfluenced unit enters horde members influence, join the horde
+- Horde should have single colour to show clearly when influence switches
+- Horde color can be randomly generated (hsl)
+- Projectile hits can de-influence horde members (timer before can rejoin original horde)
+- Horde combat essentially involves a bit of javelin and a bit of pushing/chasing.
+- Uninfluenced riders will try to escape large hordes
