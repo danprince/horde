@@ -707,11 +707,11 @@ function throw_(thrower: GameObject, point: Point) {
     flip: point.x < thrower.x,
   };
 
-  let jitter = 10;
+  let offset = 10;
 
   point = {
-    x: point.x + randomInt(jitter * 2) - jitter,
-    y: point.y + randomInt(jitter * 2) - jitter,
+    x: point.x + randomInt(offset * 2) - offset,
+    y: point.y + randomInt(offset * 2) - offset,
   };
 
   // TODO: Enforce max throwing distance
@@ -739,8 +739,7 @@ function throw_(thrower: GameObject, point: Point) {
 
     if (objects.length) {
       decorations.push(Decoration({
-        x: p.x,
-        y: p.y,
+        ...jitter(p, 5),
         sprites: [randomElement(strip(sprites.blood, 5, 5))],
       }))
     }
