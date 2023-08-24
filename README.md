@@ -24,3 +24,7 @@ Need to get sprite recoloring working to have good visual variety within hordes.
 If the world is truly open, then will need to think about a chunk representation. Would need 1, 4 or 9 chunks in memory at all times.
 
 Could technically reduce the sprite count from 8 to 5, then flip for the missing 3 directions.
+
+Figure out how to model the world. Square cells? Square cells with offsets to make them less grid like?
+
+Move everyone with dijkstra? Create a dijkstra map from target back to all units, then just have everyone go downhill?

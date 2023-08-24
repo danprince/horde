@@ -17,6 +17,7 @@ interface Point {
 }
 
 interface Sprite {
+  source?: HTMLCanvasElement | HTMLImageElement;
   x: number;
   y: number;
   w: number;
@@ -47,28 +48,45 @@ interface GameObject {
   z: number;
   sprite: Sprite[];
   riding?: Sprite[];
+  holding?: Sprite;
   direction: Direction;
+  horde?: Horde;
+  influenceRadius: number;
   shadow?: boolean;
   ai?: boolean;
+  follower?: boolean;
   speed: number;
+  palette?: HTMLImageElement | HTMLCanvasElement;
 }
 
 const ctx = c.getContext("2d")!;
 const width = (c.width = 400);
 const height = (c.height = 225);
 const objects: GameObject[] = [];
+const hordes: Horde[] = [];
 const decorations: Decoration[] = [];
 const projectiles = new Set<Projectile>();
-const camera = { x: 0, y: 0, z: 1.5 };
+const camera = { x: 0, y: 0, z: 2 };
 
 function resize() {
   const scale = Math.min(innerWidth / width, innerHeight / height);
   c.style.width = `${width * scale}px`;
   c.style.height = `${height * scale}px`;
+  ctx.imageSmoothingEnabled = false;
 }
 
 function spr(sprite: Sprite, x: number, y: number, w = sprite.w, h = sprite.h) {
-  ctx.drawImage(s, sprite.x, sprite.y, sprite.w, sprite.h, x | 0, y | 0, w, h);
+  ctx.drawImage(
+    sprite.source ?? s,
+    sprite.x,
+    sprite.y,
+    sprite.w,
+    sprite.h,
+    x | 0,
+    y | 0,
+    w,
+    h,
+  );
 }
 
 function drawAnchoredSprite(
@@ -79,7 +97,6 @@ function drawAnchoredSprite(
 ) {
   ctx.save();
   ctx.translate(x | 0, y | 0);
-  ctx.scale(camera.z, camera.z);
   if (flip) ctx.scale(-1, 1);
   if (sprite.pivot) {
     spr(sprite, -sprite.pivot.x, -sprite.pivot.y);
@@ -89,15 +106,11 @@ function drawAnchoredSprite(
   ctx.restore();
 }
 
-function drawSprite(
-  sprite: Sprite,
-  x: number,
-  y: number,
-) {
+function drawSprite(sprite: Sprite, x: number, y: number) {
   if (sprite.pivot) {
-    spr(sprite, x -sprite.pivot.x, y-sprite.pivot.y);
+    spr(sprite, x - sprite.pivot.x, y - sprite.pivot.y);
   } else {
-    spr(sprite, x-sprite.w / 2, y-sprite.h);
+    spr(sprite, x - sprite.w / 2, y - sprite.h);
   }
 }
 
@@ -128,6 +141,44 @@ interface Rectangle {
   y2: number;
 }
 
+const COLOR_HORSE = 0x694636;
+const COLOR_HORSE_ALT = 0x503528;
+const COLOR_MANE = 0x45283c;
+const COLOR_RIDER = 0x8c8a33;
+const COLOR_RIDER_ALT = 0x8a6f30;
+const COLOR_BEARD = 0x222034;
+
+// prettier-ignore
+const palettes = [
+  s,
+  recolor({ [COLOR_HORSE]: 0x7e8687, [COLOR_HORSE_ALT]: 0x595e5f }),
+  recolor({ [COLOR_HORSE]: 0x8a6f30, [COLOR_HORSE_ALT]: 0x7d6429, }),
+  recolor({ [COLOR_HORSE]: 0xcbdbfc, [COLOR_HORSE_ALT]: 0xa2b5dc, [COLOR_MANE]: 0x7e8687, [COLOR_RIDER]: 0xac3232 }),
+  recolor({ [COLOR_HORSE]: 0x45283c, [COLOR_HORSE_ALT]: 0x222034, [COLOR_MANE]: 0x222034 }),
+  recolor({ [COLOR_RIDER]: 0x9b510d, [COLOR_BEARD]: 0xcbdbfc }),
+  recolor({ [COLOR_RIDER]: 0x8a6f30, }),
+  recolor({ [COLOR_RIDER]: 0x3f3f74, [COLOR_RIDER_ALT]: 0x5b6ee1 }),
+];
+
+function recolor(mappings: Record<number, number>) {
+  let c = document.createElement("canvas");
+  let ctx = c.getContext("2d")!;
+  ctx.drawImage(s, 0, 0);
+  let imageData = ctx.getImageData(0, 0, s.width, s.height);
+  for (let i = 0; i < imageData.data.length; i++) {
+    let src =
+      (imageData.data[i] << 16) |
+      (imageData.data[i + 1] << 8) |
+      imageData.data[i + 2];
+    let dst = mappings[src] || src;
+    imageData.data[i] = dst >> 16;
+    imageData.data[i + 1] = (dst >> 8) & 0xff;
+    imageData.data[i + 2] = dst & 0xff;
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return c;
+}
+
 function isPointInRect(point: Point, rectangle: Rectangle) {
   return (
     point.x >= rectangle.x1 &&
@@ -141,30 +192,65 @@ function update(dt: number) {
   updateAnimations(dt);
   updateAI();
   updateDecorations(dt);
-  player.x |= 0;
-  player.y |= 0;
-  camera.x = player.x;
-  camera.y = player.y;
+  updateCollisions();
+  camera.x = player.x |= 0;
+  camera.y = player.y |= 0;
 }
 
 function randomPoint(): Point {
-  return { x: random(width), y: random(height) };
+  return { x: randomInt(width), y: randomInt(height) };
+}
+
+function getRandomPointAround(point: Point, radius: number): Point {
+  let angle = Math.random() * TWO_PI;
+  return {
+    x: point.x + Math.sin(angle) * radius,
+    y: point.y + Math.cos(angle) * radius,
+  };
 }
 
 function updateAI() {
   for (let object of objects) {
     if (object.ai) {
-      let angle = Math.random() * Math.PI * 2;
-      let radius = Math.random() * 100;
-      let point = {
-        x: object.x + Math.sin(angle) * radius,
-        y: object.y + Math.cos(angle) * radius,
-      };
-      let path = findPath(object, point);
-      delete object.ai;
-      walk(object, path).then(() => (object.ai = true));
+      updateObjectAI(object);
     }
   }
+}
+
+function updateCollisions() {
+  for (let object of objects) {
+    for (let other of objects) {
+      if (object === other) continue;
+      if (doCirclesIntersect(object.x, object.y, object.influenceRadius, other.x, other.y, other.influenceRadius)) {
+        if (object.horde && !other.horde && other.follower) {
+          object.horde.add(other);
+        }
+      }
+    }
+  }
+}
+
+function areObjectsInProximity(a: GameObject, b: GameObject): boolean {
+  return doCirclesIntersect(a.x, a.y, a.influenceRadius, b.x, b.y, b.influenceRadius);
+}
+
+async function updateObjectAI(object: GameObject) {
+  if (object.horde && areObjectsInProximity(object.horde.leader, object)) {
+    console.log("object is in horde alreay")
+    // No need to do anything if we're already inside the horde's influence radius
+    return;
+  }
+  delete object.ai;
+  let target = object.horde ? object.horde.leader : object;
+  let radius = object.horde ? randomInt(50) : randomInt(100);
+  let point = getRandomPointAround(target, radius);
+  let path = findPath(object, point);
+  await walk(object, path);
+  object.ai = true;
+}
+
+function doCirclesIntersect(x1: number, y1: number, r1: number, x2: number, y2: number, r2: number): boolean {
+  return Math.hypot(x1 - x2, y1 - y2) <= r1 + r2;
 }
 
 function updateDecorations(dt: number) {
@@ -193,6 +279,8 @@ function render() {
   ctx.save();
   ctx.translate(-view.x1, -view.y1);
 
+  drawSprite(sprites.unit_indicator, player.x, player.y);
+
   for (let decoration of decorations) {
     if (!isPointInRect(decoration, view)) continue;
     spr(decoration.sprites[decoration.spriteIndex], decoration.x, decoration.y);
@@ -204,24 +292,18 @@ function render() {
 
   for (let object of objects) {
     if (!isPointInRect(object, view)) continue;
+    if (object.influenceRadius <= 0) continue;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(object.x, object.y, object.influenceRadius, 0, TWO_PI);
+    ctx.fillStyle = object.horde?.color ?? `rgba(255, 255, 255, 20%)`;
+    ctx.fill();
+    ctx.restore();
+  }
 
-    if (object.shadow) {
-      drawSprite(sprites.shadow, object.x, object.y);
-    }
-
-    if (object.riding) {
-      drawSprite(
-        object.riding[object.direction],
-        object.x,
-        object.y - object.z,
-      );
-    }
-
-    drawSprite(
-      object.sprite[object.direction],
-      object.x,
-      object.y - object.z,
-    );
+  for (let object of objects) {
+    if (!isPointInRect(object, view)) continue;
+    renderObject(object);
   }
 
   for (let projectile of projectiles) {
@@ -236,21 +318,49 @@ function render() {
   }
 
   textAlign = "center";
-  writeText("Raise a Horde", width / 2, 10);
+  writeText("Raise a Horde", 0, 10);
   ctx.restore();
+}
+
+function renderObject(object: GameObject) {
+  if (object.shadow) {
+    drawSprite(sprites.shadow, object.x, object.y);
+  }
+
+  if (object.riding) {
+    drawSprite(
+      object.riding[object.direction],
+      object.x,
+      object.y - object.z,
+    );
+  }
+
+  drawSprite(object.sprite[object.direction], object.x, object.y - object.z);
+
+  if (object.holding) {
+    drawSprite(object.holding, object.x, object.y - object.z - 10);
+  }
 }
 
 export let easeInOut = (t: number) =>
   (t *= 2) < 1 ? 0.5 * t * t : -0.5 * (--t * (t - 2) - 1);
 
-let player = GameObject({
-  x: 100,
-  y: 100,
-  speed: 30,
-  sprite: strip(sprites.rider, 16, 16),
-  riding: strip(sprites.horse, 16, 16),
-  shadow: true,
-});
+class Horde {
+  leader: GameObject;
+  objects: GameObject[] = [];
+  color = `hsla(${randomInt(360)}, 80%, 50%, 20%)`;
+
+  constructor(leader: GameObject) {
+    this.leader = leader;
+    this.objects.push(leader);
+  }
+
+  add(object: GameObject) {
+    this.objects.push(object);
+    object.horde = this;
+    object.speed = this.leader.speed;
+  }
+}
 
 /**
  * Convert screen coordinates into canvas coordinates. Accounts for visual
@@ -262,6 +372,19 @@ function screenToCanvas(screenX: number, screenY: number): Point {
   let y = ((screenY - rect.y) / (rect.height / height)) | 0;
   return { x, y };
 }
+
+let player = GameObject({
+  x: 100,
+  y: 100,
+  speed: 30,
+  sprite: strip(sprites.rider, 16, 16),
+  riding: strip(sprites.horse, 16, 16),
+  shadow: true,
+  influenceRadius: 30,
+});
+
+player.horde = new Horde(player);
+hordes.push(player.horde);
 
 /**
  * Convert canvas coordinates to world coordinates. Accounting for camera
@@ -388,7 +511,22 @@ function pathToWaypoints(start: Point, path: Point[]): Point[] {
   return points;
 }
 
+function jitter(point: Point, amount: number): Point {
+  return {
+    x: point.x + randomInt(amount * 2) - amount,
+    y: point.y + randomInt(amount * 2) - amount,
+  };
+}
+
 async function walk(object: GameObject, path: Point[]) {
+  if (object.horde?.leader === object) {
+    for (let follower of object.horde.objects) {
+      if (follower !== object) {
+        walk(follower, path.map(p => jitter(p, 20)));
+      }
+    }
+  }
+
   for (let point of path) {
     let easing =
       point === path[0]
@@ -446,7 +584,9 @@ function lerp2(p1: Point, p2: Point, t: number): Point {
 }
 
 function GameObject(init: Partial<GameObject>): GameObject {
-  return { x: 0, y: 0, z: 0, direction: 0, speed: 0, sprite: [], ...init };
+  if (init.palette && init.sprite)
+    init.sprite = init.sprite.map(s => ({ ...s, source: init.palette }));
+  return { x: 0, y: 0, z: 0, direction: 0, speed: 0, influenceRadius: 0, sprite: [], ...init };
 }
 
 let cursor: Point | undefined;
@@ -533,7 +673,7 @@ async function playerWalkTo(point: Point) {
   waypoints = [];
 }
 
-function random(max: number): number {
+function randomInt(max: number): number {
   return (Math.random() * max) | 0;
 }
 
@@ -544,6 +684,21 @@ function randomElement<T>(array: T[]): T {
 function Horse() {
   return GameObject({
     sprite: strip(sprites.horse, 16, 16),
+    palette: randomElement(palettes),
+    shadow: true,
+    ai: true,
+    speed: 10,
+  });
+}
+
+function Rider() {
+  return GameObject({
+    sprite: strip(sprites.rider, 16, 16),
+    influenceRadius: 10,
+    palette: randomElement(palettes),
+    riding: Horse().sprite,
+    holding: randomElement([sprites.flag, undefined, undefined]),
+    follower: true,
     shadow: true,
     ai: true,
     speed: 10,
@@ -660,7 +815,7 @@ function measureText(text: string): number {
 function decorate() {
   let grass = strip(sprites.grass_1, 8, 6);
   let grass1 = [grass[0], grass[1], grass[2], grass[1], grass[0], grass[3]];
-  let grass2 = strip(sprites.grass_2, 6, 6);
+  let grass2 = strip(sprites.grass_2, 5, 6);
   let grass3 = [sprites.grass_3];
   let grass4 = [sprites.grass_4];
 
@@ -684,7 +839,7 @@ function decorate() {
       y,
       sprites: randomElement([grass1, grass2, grass3, grass4]),
       spriteIndex: 0,
-      animationSpeed: 200 + random(1000),
+      animationSpeed: 200 + randomInt(1000),
       animationTimer: 0,
     });
   }
@@ -712,7 +867,8 @@ function init() {
   decorate();
   spawn(player);
   for (let i = 0; i < 8; i++) {
-    spawn(Horse(), random(width), random(height));
+    spawn(Horse(), randomInt(width), randomInt(height));
+    spawn(Rider(), randomInt(width), randomInt(height));
   }
   resize();
   onresize = resize;

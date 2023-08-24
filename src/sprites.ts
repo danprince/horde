@@ -2,11 +2,11 @@
 import url from "./sprites.png"
 export const horse = { pivot: { x: 7, y: 12, }, y: 0, url, w: 128, h: 16, x: 0, };
 export const rider = { pivot: { x: 7, y: 12, }, y: 16, url, w: 128, h: 16, x: 0, };
-export const shadow = { pivot: { x: 7, y: 11, }, y: 48, url, w: 16, h: 16, x: 16, };
+export const shadow = { pivot: { x: 7, y: 3, }, y: 57, url, w: 16, h: 7, x: 16, };
 export const waypoint = { y: 48, url, w: 4, h: 3, x: 0, };
-export const flag = { pivot: { x: 7, y: 11, }, y: 48, url, w: 16, h: 16, x: 32, };
+export const flag = { pivot: { x: 3, y: 17, }, y: 46, url, w: 7, h: 18, x: 8, };
 export const grass_1 = { y: 74, url, w: 32, h: 6, x: 0, };
-export const grass_2 = { y: 74, url, w: 16, h: 6, x: 32, };
+export const grass_2 = { y: 74, url, w: 15, h: 6, x: 32, };
 export const grass_3 = { y: 74, url, w: 4, h: 6, x: 48, };
 export const grass_4 = { y: 74, url, w: 7, h: 6, x: 52, };
 export const rocks = { y: 69, url, w: 30, h: 5, x: 0, };
@@ -20,3 +20,4 @@ export const rock_2 = { y: 72, url, w: 10, h: 8, x: 108, };
 export const rock_3 = { y: 67, url, w: 15, h: 13, x: 119, };
 export const rock_4 = { y: 69, url, w: 8, h: 11, x: 135, };
 export const rock_5 = { y: 68, url, w: 16, h: 12, x: 144, };
+export const unit_indicator = { pivot: { x: 7, y: 4, }, y: 48, url, w: 16, h: 9, x: 16, };
