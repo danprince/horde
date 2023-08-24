@@ -767,7 +767,7 @@ function damage(object: GameObject, amount: number) {
 }
 
 function die(object: GameObject) {
-  object.horde.disband();
+  object.horde?.disband();
   despawn(object);
 }
 
