@@ -193,8 +193,8 @@ function update(dt: number) {
   updateAI();
   updateDecorations(dt);
   updateCollisions();
-  camera.x = player.x |= 0;
-  camera.y = player.y |= 0;
+  camera.x = player.x | 0;
+  camera.y = player.y | 0;
 }
 
 function randomPoint(): Point {
@@ -323,23 +323,13 @@ function render() {
 }
 
 function renderObject(object: GameObject) {
-  if (object.shadow) {
-    drawSprite(sprites.shadow, object.x, object.y);
-  }
-
-  if (object.riding) {
-    drawSprite(
-      object.riding[object.direction],
-      object.x,
-      object.y - object.z,
-    );
-  }
-
-  drawSprite(object.sprite[object.direction], object.x, object.y - object.z);
-
-  if (object.holding) {
-    drawSprite(object.holding, object.x, object.y - object.z - 10);
-  }
+  let x = object.x | 0;
+  let y = object.y | 0;
+  let z = object.z | 0;
+  if (object.shadow) drawSprite(sprites.shadow, x, y);
+  if (object.riding) drawSprite(object.riding[object.direction], x, y - z);
+  drawSprite(object.sprite[object.direction], x, y - z);
+  if (object.holding) drawSprite(object.holding, x, y - z - 10);
 }
 
 export let easeInOut = (t: number) =>
