@@ -15,8 +15,7 @@ export default defineConfig({
       },
       mangle: {
         properties: {
-          // Glyph width overrides in font.json need to be preserved.
-          //keep_quoted: true
+          keep_quoted: true, // Glyph width overrides need to be preserved
         },
       },
     },
