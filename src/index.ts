@@ -222,12 +222,16 @@ function isPointInRect(point: Point, rectangle: Rectangle) {
 }
 
 function update(dt: number) {
+  for (let object of objects) {
+    object.x |= 0;
+    object.y |= 0;
+  }
   updateAnimations(dt);
   updateAI();
   updateDecorations(dt);
   updateCollisions();
-  camera.x = lerp(camera.x, player.x, 0.07) | 0;
-  camera.y = lerp(camera.y, player.y, 0.07) | 0;
+  camera.x = player.x;
+  camera.y = player.y;
 }
 
 function randomPoint(): Point {
@@ -767,7 +771,12 @@ function damage(object: GameObject, amount: number) {
 }
 
 function die(object: GameObject) {
-  object.horde?.disband();
+  if (object.horde?.leader === object) {
+    object.horde?.disband();
+  } else if (object.horde) {
+    object.horde.remove(object);
+  }
+
   despawn(object);
 }
 
