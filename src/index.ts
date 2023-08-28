@@ -6,6 +6,7 @@ import {
   screenToCanvasCoords,
   timer,
   updateTimers,
+  slice,
 } from "./engine";
 import { Unit, game } from "./game";
 import { Point, getAngleBetweenPoints, getDirectionFromAngle, getDistanceBetweenPoints } from "./geometry";
