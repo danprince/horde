@@ -8,10 +8,7 @@ import {
   slice,
 } from "./engine";
 import { Unit, game } from "./game";
-import {
-  getAngleBetweenPoints,
-  getDirectionFromAngle,
-} from "./geometry";
+import { getAngleBetweenPoints, getDirectionFromAngle } from "./geometry";
 import * as sprites from "./sprites";
 import { moveTo } from "./actions";
 
@@ -56,8 +53,7 @@ function render() {
 
 function init() {
   game.player.sprites = slice(sprites.rider, 16);
-  game.player.speed = 
-  game.player.x = 50;
+  game.player.speed = game.player.x = 50;
   game.player.y = 50;
 
   let horse = new Unit();
