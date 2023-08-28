@@ -7,6 +7,7 @@ export class Unit {
   z = 0;
   sprites: Sprite[] = [];
   direction: Direction = EAST;
+  mount?: Unit;
 }
 
 export class Game {

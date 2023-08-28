@@ -1,8 +1,15 @@
-import { clear, drawSprite, loop, resize, screenToCanvasCoords, updateTimers } from "./engine";
-import { game } from "./game";
+import {
+  clear,
+  drawSprite,
+  loop,
+  resize,
+  screenToCanvasCoords,
+  updateTimers,
+} from "./engine";
+import { Unit, game } from "./game";
 import { getAngleBetweenPoints, getDirectionFromAngle } from "./geometry";
-import { rider } from "./sprites";
 import { slice } from "./utils";
+import * as sprites from "./sprites";
 
 onresize = resize;
 
@@ -11,7 +18,7 @@ onpointermove = event => {
   let rad = getAngleBetweenPoints(game.player, pos);
   let dir = getDirectionFromAngle(rad);
   game.player.direction = dir;
-}
+};
 
 function update(dt: number) {
   updateTimers(dt);
@@ -21,17 +28,25 @@ function update(dt: number) {
 function render() {
   clear();
   for (let unit of game.units) {
-    let spr = unit.sprites[unit.direction];
-    drawSprite(spr, unit.x, unit.y - unit.z);
+    if (unit.mount) {
+      drawSprite(unit.mount.sprites[unit.direction], unit.x, unit.y);
+    }
+
+    drawSprite(unit.sprites[unit.direction], unit.x, unit.y - unit.z);
   }
 }
 
 function init() {
-  resize();
-  loop(update);
-  game.player.sprites = slice(rider, 16);
+  game.player.sprites = slice(sprites.rider, 16);
   game.player.x = 50;
   game.player.y = 50;
+
+  let horse = new Unit();
+  horse.sprites = slice(sprites.horse, 16);
+  game.player.mount = horse;
+
+  resize();
+  loop(update);
 }
 
 init();
