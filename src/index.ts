@@ -1,4 +1,4 @@
-import { loop, resize, screenToCanvasCoords, updateTimers } from "./engine";
+import { loop, resize, updateTimers } from "./engine";
 import { game } from "./game";
 import { getAngleBetweenPoints, getDirectionFromAngle } from "./geometry";
 import { moveTo } from "./actions";
@@ -8,14 +8,14 @@ import { Player, Rider } from "./units";
 onresize = resize;
 
 onpointermove = event => {
-  let pos = screenToCanvasCoords(event.clientX, event.clientY);
+  let pos = game.screenToWorld({ x: event.clientX, y: event.clientY });
   let rad = getAngleBetweenPoints(game.player, pos);
   let dir = getDirectionFromAngle(rad);
   if (!game.player.goal) game.player.direction = dir;
 };
 
 onpointerdown = event => {
-  let position = screenToCanvasCoords(event.clientX, event.clientY);
+  let position = game.screenToWorld({ x: event.clientX, y: event.clientY });
   moveTo(game.player, position);
 };
 

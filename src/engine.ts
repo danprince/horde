@@ -47,13 +47,6 @@ export function loop(callback: (dt: number) => void) {
   });
 }
 
-export function screenToCanvasCoords(screenX: number, screenY: number): Point {
-  let rect = c.getBoundingClientRect();
-  let x = ((screenX - rect.x) / (rect.width / c.width)) | 0;
-  let y = ((screenY - rect.y) / (rect.height / c.height)) | 0;
-  return { x, y };
-}
-
 interface Timer {
   duration: number;
   elapsed: number;

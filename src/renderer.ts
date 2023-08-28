@@ -1,9 +1,13 @@
-import { clear, drawSprite } from "./engine";
+import { clear, ctx, drawSprite } from "./engine";
 import { game } from "./game";
 import * as sprites from "./sprites";
 
 export function render() {
+  let view = game.viewport();
+
   clear();
+  ctx.save();
+  ctx.translate(-view.x1, -view.y1);
 
   for (let unit of game.units) {
     drawSprite(sprites.shadow, unit.x, unit.y);
@@ -30,4 +34,6 @@ export function render() {
     drawSprite(sprites.shadow, x, y);
     drawSprite(sprites.flag, x, y, game.player.palette);
   }
+
+  ctx.restore();
 }
