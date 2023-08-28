@@ -3,7 +3,7 @@ import { game } from "./game";
 import { getAngleBetweenPoints, getDirectionFromAngle } from "./geometry";
 import { moveTo } from "./actions";
 import { render } from "./renderer";
-import { Player } from "./units";
+import { Player, Rider } from "./units";
 
 onresize = resize;
 
@@ -27,7 +27,9 @@ function update(dt: number) {
 
 function init() {
   game.player = Player();
-  game.units.add(game.player);
+  game.spawn(game.player, 100, 100);
+  game.spawn(Rider(), 40, 20);
+  game.spawn(Rider(), 100, 40);
   resize();
   loop(update);
 }

@@ -3,8 +3,10 @@ import { Unit } from "./game";
 import * as sprites from "./sprites";
 
 export function Player() {
-  let unit = Rider();
-  unit.speed = 50;
+  let unit = new Unit();
+  unit.mount = Horse();
+  unit.sprites = slice(sprites.rider, 16);
+  unit.speed = 30;
   return unit;
 }
 
@@ -17,7 +19,7 @@ export function Horse() {
 export function Rider() {
   let unit = new Unit();
   unit.sprites = slice(sprites.rider, 16);
-  unit.speed = 30;
+  unit.speed = 10;
   unit.mount = Horse();
   return unit;
 }

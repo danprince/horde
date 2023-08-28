@@ -10,24 +10,37 @@ export class Game {
       unit.update(dt);
     }
   }
+
+  spawn(unit: Unit, x: number, y: number) {
+    unit.x = x;
+    unit.y = y;
+    this.units.add(unit);
+  }
+
+  despawn(unit: Unit) {
+    this.units.delete(unit);
+  }
 }
 
 export class Unit {
   x = 0;
   y = 0;
   z = 0;
-  speed: number = 30;
+  speed: number = 10;
   sprites: Sprite[] = [];
   direction: Direction = EAST;
   mount?: Unit;
   heading?: Point;
-  goal?: Goal;
+  goal?(dt: number): void;
+  bored?(unit: Unit) {}
 
   update(dt: number) {
-    this.goal?.(this, dt);
+    this.goal?.(dt);
+
+    if (!this.goal) {
+      this.bored?.(this);
+    }
   }
 }
-
-export type Goal = (unit: Unit, dt: number) => void;
 
 export let game = new Game();
