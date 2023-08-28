@@ -5,6 +5,8 @@ import {
   getAngleBetweenPoints,
   getDistanceBetweenPoints,
   getDirectionFromAngle,
+  TWO_PI,
+  getPointOnCircle,
 } from "./geometry";
 
 export function moveTo(unit: Unit, position: Point) {
@@ -32,4 +34,11 @@ export function moveTo(unit: Unit, position: Point) {
       delete unit.heading;
     }
   };
+}
+
+export function wander(unit: Unit) {
+  let angle = TWO_PI * Math.random();
+  let distance = 50 + Math.random() * 50;
+  let position = getPointOnCircle(unit.x, unit.y, angle, distance);
+  unit.goal = () => moveTo(unit, position);
 }

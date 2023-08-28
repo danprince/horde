@@ -1,3 +1,4 @@
+import { wander } from "./actions";
 import { slice } from "./engine";
 import { Unit } from "./game";
 import * as sprites from "./sprites";
@@ -21,5 +22,6 @@ export function Rider() {
   unit.sprites = slice(sprites.rider, 16);
   unit.speed = 10;
   unit.mount = Horse();
+  unit.bored = wander;
   return unit;
 }

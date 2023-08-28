@@ -41,3 +41,15 @@ export function getDirectionFromAngle(radians: number): Direction {
 export function getDistanceBetweenPoints(p1: Point, p2: Point): number {
   return Math.hypot(p2.y - p1.y, p2.x - p1.x);
 }
+
+export function getPointOnCircle(
+  x: number,
+  y: number,
+  angle: number,
+  radius: number,
+): Point {
+  return {
+    x: x + Math.sin(angle) * radius,
+    y: y + Math.sin(angle) * radius,
+  }
+}
