@@ -19,7 +19,7 @@ export function moveTo(unit: Unit, position: Point) {
 
   unit.direction = getDirectionFromAngle(angle);
   unit.heading = p2;
-  unit.goal = (unit, dt) => {
+  unit.goal = dt => {
     timer += dt;
 
     let t = Math.min(1, timer / duration);
