@@ -28,8 +28,10 @@ function update(dt: number) {
 function render() {
   clear();
   for (let unit of game.units) {
+    drawSprite(sprites.shadow, unit.x, unit.y);
+
     if (unit.mount) {
-      drawSprite(unit.mount.sprites[unit.direction], unit.x, unit.y);
+      drawSprite(unit.mount.sprites[unit.direction], unit.x, unit.y - unit.z);
     }
 
     drawSprite(unit.sprites[unit.direction], unit.x, unit.y - unit.z);
