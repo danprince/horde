@@ -4,10 +4,11 @@ import {
   loop,
   resize,
   screenToCanvasCoords,
+  timer,
   updateTimers,
 } from "./engine";
 import { Unit, game } from "./game";
-import { getAngleBetweenPoints, getDirectionFromAngle } from "./geometry";
+import { Point, getAngleBetweenPoints, getDirectionFromAngle, getDistanceBetweenPoints } from "./geometry";
 import { slice } from "./utils";
 import * as sprites from "./sprites";
 
@@ -21,9 +22,29 @@ onpointermove = event => {
 };
 
 onpointerdown = event => {
-  let pos = screenToCanvasCoords(event.clientX, event.clientY);
-  game.player.x = pos.x;
-  game.player.y = pos.y;
+  let position = screenToCanvasCoords(event.clientX, event.clientY);
+  move(game.player, position);
+}
+
+function move(unit: Unit, position: Point) {
+  let angle = getAngleBetweenPoints(unit, position);
+  let direction = getDirectionFromAngle(angle);
+  let distance = getDistanceBetweenPoints(unit, position);
+  let time = distance / unit.speed * 1000;
+
+  let x1 = unit.x;
+  let y1 = unit.y;
+  let x2 = position.x;
+  let y2 = position.y;
+
+  let jumps = Math.floor(time / 1000) * 3;
+
+  timer(time, t => {
+    unit.direction = direction;
+    unit.x = x1 + (x2 - x1) * t;
+    unit.y = y1 + (y2 - y1) * t;
+    unit.z = Math.abs(Math.sin(t * Math.PI * jumps)) * 2;
+  });
 }
 
 function update(dt: number) {

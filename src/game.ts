@@ -5,6 +5,7 @@ export class Unit {
   x = 0;
   y = 0;
   z = 0;
+  speed: number = 30;
   sprites: Sprite[] = [];
   direction: Direction = EAST;
   mount?: Unit;
