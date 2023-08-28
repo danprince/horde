@@ -5,14 +5,14 @@ export interface Point {
 
 export const TWO_PI = 2 * Math.PI;
 
-export const NORTH = 0;
-export const NORTH_EAST = 1;
-export const EAST = 2;
-export const SOUTH_EAST = 3;
-export const SOUTH = 4;
-export const SOUTH_WEST = 5;
-export const WEST = 6;
-export const NORTH_WEST = 7;
+export const WEST = 0;
+export const NORTH_WEST = 1;
+export const NORTH = 2;
+export const NORTH_EAST = 3;
+export const EAST = 4;
+export const SOUTH_EAST = 5;
+export const SOUTH = 6;
+export const SOUTH_WEST = 7;
 
 export type Direction =
   | typeof NORTH
