@@ -2,8 +2,8 @@ import { Sprite } from "./engine";
 import { Direction, EAST, Point } from "./geometry";
 
 export class Game {
-  player: Unit = new Unit();
-  units = new Set<Unit>([this.player]);
+  player: Unit = undefined!;
+  units = new Set<Unit>();
 
   update(dt: number) {
     for (let unit of this.units) {
