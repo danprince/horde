@@ -20,6 +20,12 @@ onpointermove = event => {
   game.player.direction = dir;
 };
 
+onpointerdown = event => {
+  let pos = screenToCanvasCoords(event.clientX, event.clientY);
+  game.player.x = pos.x;
+  game.player.y = pos.y;
+}
+
 function update(dt: number) {
   updateTimers(dt);
   render();
