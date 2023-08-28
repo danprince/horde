@@ -1,4 +1,4 @@
-import { Sprite } from "./engine";
+import { Palette, Sprite } from "./engine";
 import { Direction, EAST, Point } from "./geometry";
 
 export class Game {
@@ -31,6 +31,7 @@ export class Unit {
   direction: Direction = EAST;
   mount?: Unit;
   heading?: Point;
+  palette?: Palette;
   goal?(dt: number): void;
   bored?(unit: Unit) {}
 

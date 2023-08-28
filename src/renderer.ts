@@ -9,15 +9,25 @@ export function render() {
     drawSprite(sprites.shadow, unit.x, unit.y);
 
     if (unit.mount) {
-      drawSprite(unit.mount.sprites[unit.direction], unit.x, unit.y - unit.z);
+      drawSprite(
+        unit.mount.sprites[unit.direction],
+        unit.x,
+        unit.y - unit.z,
+        unit.mount.palette,
+      );
     }
 
-    drawSprite(unit.sprites[unit.direction], unit.x, unit.y - unit.z);
+    drawSprite(
+      unit.sprites[unit.direction],
+      unit.x,
+      unit.y - unit.z,
+      unit.palette,
+    );
   }
 
   if (game.player.heading) {
     let { x, y } = game.player.heading;
     drawSprite(sprites.shadow, x, y);
-    drawSprite(sprites.flag, x, y);
+    drawSprite(sprites.flag, x, y, game.player.palette);
   }
 }
