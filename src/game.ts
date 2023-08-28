@@ -1,0 +1,17 @@
+import { Sprite } from "./engine";
+import { Direction, EAST } from "./geometry";
+
+export class Unit {
+  x = 0;
+  y = 0;
+  z = 0;
+  sprites: Sprite[] = [];
+  direction: Direction = EAST;
+}
+
+export class Game {
+  player: Unit = new Unit();
+  units = new Set<Unit>([this.player]);
+}
+
+export let game = new Game();
