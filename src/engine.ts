@@ -31,7 +31,7 @@ export function clear() {
 
 export function drawSprite(spr: Sprite, x: number, y: number): void {
   if (spr.pivot) (x -= spr.pivot.x), (y -= spr.pivot.y);
-  ctx.drawImage(s, spr.x, spr.y, spr.w, spr.h, x, y, spr.w, spr.h);
+  ctx.drawImage(s, spr.x, spr.y, spr.w, spr.h, x | 0, y | 0, spr.w, spr.h);
 }
 
 export function loop(callback: (dt: number) => void) {
