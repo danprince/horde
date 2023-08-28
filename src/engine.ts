@@ -82,3 +82,9 @@ export function slice(sprite: Sprite, width: number): Sprite[] {
   }
   return sprites;
 }
+
+export type Easing = (t: number) => number;
+
+export const easeInOutQuad: Easing = t =>
+  t < 0.5 ? 2 * t * t : -2 * t * t + 4 * t - 1;
+

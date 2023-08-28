@@ -1,3 +1,4 @@
+import { easeInOutQuad } from "./engine";
 import { Unit } from "./game";
 
 import {
@@ -25,8 +26,9 @@ export function moveTo(unit: Unit, position: Point) {
     timer += dt;
 
     let t = Math.min(1, timer / duration);
-    unit.x = p1.x + (p2.x - p1.x) * t;
-    unit.y = p1.y + (p2.y - p1.y) * t;
+    let k = easeInOutQuad(t);
+    unit.x = p1.x + (p2.x - p1.x) * k;
+    unit.y = p1.y + (p2.y - p1.y) * k;
     unit.z = Math.abs(Math.sin(t * Math.PI * hops)) * 2;
 
     if (t >= 1) {
