@@ -27,9 +27,9 @@ export function moveTo(unit: Unit, position: Point) {
 
     let t = Math.min(1, timer / duration);
     let k = easeInOutQuad(t);
-    unit.x = p1.x + (p2.x - p1.x) * k;
-    unit.y = p1.y + (p2.y - p1.y) * k;
-    unit.z = Math.abs(Math.sin(t * Math.PI * hops)) * 2;
+    unit.x = Math.round(p1.x + (p2.x - p1.x) * k);
+    unit.y = Math.round(p1.y + (p2.y - p1.y) * k);
+    unit.z = Math.round(Math.abs(Math.sin(t * Math.PI * hops)) * 2);
 
     if (t >= 1) {
       delete unit.goal;
