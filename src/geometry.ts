@@ -56,8 +56,8 @@ export function getPointOnCircle(
   radius: number,
 ): Point {
   return {
-    x: x + Math.sin(angle) * radius,
-    y: y + Math.cos(angle) * radius,
+    x: x + Math.cos(angle) * radius,
+    y: y + Math.sin(angle) * radius,
   };
 }
 
