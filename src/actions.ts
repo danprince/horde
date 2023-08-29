@@ -58,7 +58,7 @@ export function moveTo(unit: Unit, position: Point) {
 export function wander(unit: Unit) {
   let position: Point;
 
-  if (unit.isWithGroup()) {
+  if (unit.isWithGroup() && !unit.isLeader()) {
     return;
   } else if (unit.group) {
     let leader = unit.group.leader;
@@ -69,7 +69,25 @@ export function wander(unit: Unit) {
     position = getRandomPointInCircle(unit.x, unit.y, distance);
   }
 
-  unit.goal = () => moveTo(unit, position);
+  moveTo(unit, position);
+}
+
+export function hunt(unit: Unit) {
+  let vision = 100;
+
+  let targets = game
+    .getUnitsInCircle(unit.x, unit.y, vision)
+    .filter(target => !target.group)
+    .sort((a, b) => unit.distance(a) - unit.distance(b));
+
+  let target = targets[0];
+
+  if (target) {
+    moveTo(unit, target);
+  } else {
+    let position = getRandomPointInCircle(unit.x, unit.y, unit.speed * 5);
+    moveTo(unit, position);
+  }
 }
 
 export function throw_(unit: Unit, target: Point) {
@@ -99,6 +117,12 @@ export function throw_(unit: Unit, target: Point) {
     projectile.y = lerp(p1.y, p2.y, t);
     projectile.z = Math.sin(t * Math.PI) * 10;
   }).then(() => {
+    let units = game.getUnitsInCircle(projectile.x, projectile.y, 10);
+
+    for (let unit of units) {
+      unit.damage();
+    }
+
     game.projectiles.delete(projectile);
     let direction = projectile.direction;
     if (direction === EAST) direction = SOUTH_EAST;

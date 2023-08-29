@@ -4,6 +4,7 @@ import {
   EAST,
   Point,
   Rectangle,
+  getDistanceBetweenPoints,
   isCircleInCircle,
 } from "./geometry";
 
@@ -39,6 +40,7 @@ export class Game {
 
   despawn(unit: Unit) {
     this.units.delete(unit);
+    unit.group?.remove(unit);
   }
 
   viewport(): Rectangle {
@@ -57,6 +59,12 @@ export class Game {
     let { x1, y1 } = this.viewport();
     return { x: x + x1, y: y + y1 };
   }
+
+  getUnitsInCircle(x: number, y: number, r: number): Unit[] {
+    return Array.from(this.units).filter(unit =>
+      isCircleInCircle(x, y, r, unit.x, unit.y, 1),
+    );
+  }
 }
 
 export class Unit {
@@ -74,12 +82,17 @@ export class Unit {
   goal?(dt: number): void;
   bored?(unit: Unit) {}
 
+  invulnerabilityTimer: number = 0;
+  previousGroup?: UnitGroup;
+
   isLeader() {
     return this.group?.leader === this;
   }
 
   followers(): Unit[] {
-    return this.isLeader() ? Array.from(this.group!.units).filter(unit => unit !== this) : [];
+    return this.isLeader()
+      ? Array.from(this.group!.units).filter(unit => unit !== this)
+      : [];
   }
 
   isWithGroup() {
@@ -97,6 +110,10 @@ export class Unit {
     );
   }
 
+  distance(point: Point): number {
+    return getDistanceBetweenPoints(this, point);
+  }
+
   update(dt: number) {
     this.goal?.(dt);
 
@@ -107,15 +124,43 @@ export class Unit {
     if (this.group?.leader === this) {
       this.updateInfluence();
     }
+
+    this.updateTimers(dt);
+  }
+
+  updateTimers(dt: number) {
+    this.invulnerabilityTimer -= dt;
   }
 
   updateInfluence() {
     for (let unit of game.units) {
-      if (unit !== this) {
-        if (this.intersects(unit) && !unit.group) {
-          this.group!.add(unit);
-        }
+      if (unit === this || unit.group) continue;
+      if (unit.isInvulnerable() && this.group === unit.previousGroup) continue;
+
+      if (this.intersects(unit)) {
+        this.group!.add(unit);
       }
+    }
+  }
+
+  hasFollowers() {
+    return this.isLeader() && this.group!.units.size > 1;
+  }
+
+  isInvulnerable() {
+    return (
+      (this.isLeader() && this.hasFollowers()) || this.invulnerabilityTimer > 0
+    );
+  }
+
+  damage() {
+    if (this.isInvulnerable()) return;
+    this.invulnerabilityTimer = 3000;
+
+    if (this.group) {
+      this.group.remove(this);
+    } else {
+      game.despawn(this);
     }
   }
 }
@@ -139,9 +184,29 @@ export class UnitGroup {
     unit.group = this;
     unit.palette = this.palette;
     unit.speed = this.leader.speed;
-    // delete unit.goal;
     this.units.add(unit);
     this.leader.influence += 1;
+  }
+
+  remove(unit: Unit) {
+    unit.group = undefined;
+    unit.palette = undefined;
+    unit.speed = 10;
+    this.units.delete(unit);
+    this.leader.influence -= 1;
+    unit.previousGroup = this;
+
+    if (unit.isLeader()) {
+      this.destroy();
+    }
+  }
+
+  destroy() {
+    for (let unit of this.units) {
+      this.remove(unit);
+    }
+
+    game.groups.delete(this);
   }
 }
 
