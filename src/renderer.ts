@@ -1,6 +1,6 @@
 import { clear, ctx, drawSprite } from "./engine";
 import { game } from "./game";
-import { isPointInRect } from "./geometry";
+import { TWO_PI, isPointInRect } from "./geometry";
 import * as sprites from "./sprites";
 
 export function render() {
@@ -14,6 +14,16 @@ export function render() {
     if (isPointInRect(deco, view)) {
       drawSprite(deco.sprite, deco.x, deco.y);
     }
+  }
+
+  for (let group of game.groups) {
+    ctx.save();
+    ctx.globalAlpha = 0.1;
+    ctx.fillStyle = group.color;
+    ctx.beginPath();
+    ctx.arc(group.leader.x, group.leader.y, group.leader.influence, 0, TWO_PI);
+    ctx.fill();
+    ctx.restore();
   }
 
   for (let unit of game.units) {

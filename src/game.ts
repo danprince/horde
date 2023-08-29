@@ -10,6 +10,7 @@ import {
 export class Game {
   player: Unit = undefined!;
   units = new Set<Unit>();
+  groups = new Set<UnitGroup>();
   decorations = new Set<Decoration>();
 
   update(dt: number) {
@@ -125,6 +126,7 @@ export class UnitGroup {
     this.palette = palette;
 
     this.add(leader);
+    game.groups.add(this);
   }
 
   add(unit: Unit) {
