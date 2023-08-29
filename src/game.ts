@@ -1,5 +1,11 @@
 import { Palette, Sprite, hslaToRgba, randomInt } from "./engine";
-import { Direction, EAST, Point, Rectangle } from "./geometry";
+import {
+  Direction,
+  EAST,
+  Point,
+  Rectangle,
+  isCircleInCircle,
+} from "./geometry";
 
 export class Game {
   player: Unit = undefined!;
@@ -61,14 +67,40 @@ export class Unit {
   heading?: Point;
   palette?: Palette;
   group?: UnitGroup;
+  influence: number = 10;
   goal?(dt: number): void;
   bored?(unit: Unit) {}
+
+  intersects(unit: Unit) {
+    return isCircleInCircle(
+      this.x,
+      this.y,
+      this.influence,
+      unit.x,
+      unit.y,
+      unit.influence,
+    );
+  }
 
   update(dt: number) {
     this.goal?.(dt);
 
     if (!this.goal) {
       this.bored?.(this);
+    }
+
+    if (this.group?.leader === this) {
+      this.updateInfluence();
+    }
+  }
+
+  updateInfluence() {
+    for (let unit of game.units) {
+      if (unit !== this) {
+        if (this.intersects(unit) && !unit.group) {
+          this.group!.add(unit);
+        }
+      }
     }
   }
 }
@@ -91,6 +123,7 @@ export class UnitGroup {
     unit.group = this;
     unit.palette = this.palette;
     this.units.add(unit);
+    this.leader.influence += 1;
   }
 }
 

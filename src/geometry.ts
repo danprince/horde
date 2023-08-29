@@ -58,7 +58,7 @@ export function getPointOnCircle(
   return {
     x: x + Math.sin(angle) * radius,
     y: y + Math.cos(angle) * radius,
-  }
+  };
 }
 
 export function isPointInRect(point: Point, rect: Rectangle): boolean {
@@ -68,4 +68,15 @@ export function isPointInRect(point: Point, rect: Rectangle): boolean {
     point.x <= rect.x2 &&
     point.y <= rect.y2
   );
+}
+
+export function isCircleInCircle(
+  x1: number,
+  y1: number,
+  r1: number,
+  x2: number,
+  y2: number,
+  r2: number,
+): boolean {
+  return Math.hypot(x2 - x1, y2 - y1) <= r1 + r2;
 }
