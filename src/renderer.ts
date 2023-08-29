@@ -54,6 +54,10 @@ export function render() {
     );
   }
 
+  for (let projectile of game.projectiles) {
+    drawSprite(projectile.sprites[projectile.direction], projectile.x, projectile.y - projectile.z);
+  }
+
   if (game.player.heading) {
     let { x, y } = game.player.heading;
     drawSprite(sprites.shadow, x, y);

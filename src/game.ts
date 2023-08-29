@@ -12,6 +12,8 @@ export class Game {
   units = new Set<Unit>();
   groups = new Set<UnitGroup>();
   decorations = new Set<Decoration>();
+  projectiles = new Set<Projectile>();
+  cursor: Point | undefined;
 
   update(dt: number) {
     for (let unit of this.units) {
@@ -74,6 +76,10 @@ export class Unit {
 
   isLeader() {
     return this.group?.leader === this;
+  }
+
+  followers(): Unit[] {
+    return this.isLeader() ? Array.from(this.group!.units).filter(unit => unit !== this) : [];
   }
 
   isWithGroup() {
@@ -162,6 +168,21 @@ export class Decoration {
       this.timer = 0;
     }
     this.sprite = this.animation[this.index];
+  }
+}
+
+export class Projectile {
+  sprites: Sprite[];
+  direction: Direction;
+  x: number;
+  y: number;
+  z: number = 0;
+
+  constructor(sprites: Sprite[], x: number, y: number, direction: Direction) {
+    this.sprites = sprites;
+    this.x = x;
+    this.y = y;
+    this.direction = direction;
   }
 }
 

@@ -1,7 +1,7 @@
 import { loop, randomInt, resize, updateTimers } from "./engine";
 import { game } from "./game";
 import { getAngleBetweenPoints, getDirectionFromAngle } from "./geometry";
-import { moveTo } from "./actions";
+import { moveTo, throw_ } from "./actions";
 import { render } from "./renderer";
 import { Player, Rider } from "./units";
 import { Dirt, Grass, Rock } from "./decorations";
@@ -12,6 +12,8 @@ onpointermove = event => {
   let pos = game.screenToWorld({ x: event.clientX, y: event.clientY });
   let rad = getAngleBetweenPoints(game.player, pos);
   let dir = getDirectionFromAngle(rad);
+
+  game.cursor = pos;
 
   if (!game.player.goal) {
     game.player.direction = dir;
@@ -26,7 +28,14 @@ onpointermove = event => {
 
 onpointerdown = event => {
   let position = game.screenToWorld({ x: event.clientX, y: event.clientY });
+  game.cursor = position;
   moveTo(game.player, position);
+};
+
+onkeydown = event => {
+  if (event.key === " " && game.cursor) {
+    throw_(game.player, game.cursor);
+  }
 };
 
 function update(dt: number) {

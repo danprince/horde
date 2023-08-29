@@ -1,5 +1,6 @@
-import { easeInOutQuad, randomInt } from "./engine";
-import { Unit } from "./game";
+import * as sprites from "./sprites";
+import { easeInOutQuad, lerp, randomInt, slice, timer } from "./engine";
+import { Decoration, Projectile, Unit, game } from "./game";
 
 import {
   Point,
@@ -9,6 +10,10 @@ import {
   getRandomPointInCircle,
   TWO_PI,
   getPointOnCircle,
+  EAST,
+  SOUTH_EAST,
+  WEST,
+  SOUTH_WEST,
 } from "./geometry";
 
 export function moveTo(unit: Unit, position: Point) {
@@ -65,4 +70,45 @@ export function wander(unit: Unit) {
   }
 
   unit.goal = () => moveTo(unit, position);
+}
+
+export function throw_(unit: Unit, target: Point) {
+  let angle = getAngleBetweenPoints(unit, target);
+  let distance = getDistanceBetweenPoints(unit, target);
+  let range = Math.min(200, distance);
+  let speed = 300;
+  let time = range / speed * 1000;
+  let p1 = { x: unit.x, y: unit.y };
+  let p2 = getPointOnCircle(unit.x, unit.y, angle + Math.PI, range);
+  let direction = getDirectionFromAngle(angle);
+
+  for (let follower of unit.followers()) {
+    let point = getRandomPointInCircle(target.x, target.y, 10);
+    throw_(follower, point);
+  }
+
+  let projectile = new Projectile(
+    slice(sprites.javelin, 7),
+    p1.x,
+    p1.y,
+    direction,
+  );
+
+  timer(time, t => {
+    projectile.x = lerp(p1.x, p2.x, t);
+    projectile.y = lerp(p1.y, p2.y, t);
+    projectile.z = Math.sin(t * Math.PI) * 10;
+  }).then(() => {
+    game.projectiles.delete(projectile);
+    let direction = projectile.direction;
+    if (direction === EAST) direction = SOUTH_EAST;
+    if (direction === WEST) direction = SOUTH_WEST;
+    game.decorate(
+      new Decoration([projectile.sprites[direction]]),
+      projectile.x,
+      projectile.y,
+    );
+  });
+
+  game.projectiles.add(projectile);
 }
