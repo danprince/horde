@@ -1,4 +1,4 @@
-import { Palette, Sprite } from "./engine";
+import { Palette, Sprite, hslaToRgba, randomInt } from "./engine";
 import { Direction, EAST, Point, Rectangle } from "./geometry";
 
 export class Game {
@@ -60,6 +60,7 @@ export class Unit {
   mount?: Unit;
   heading?: Point;
   palette?: Palette;
+  group?: UnitGroup;
   goal?(dt: number): void;
   bored?(unit: Unit) {}
 
@@ -69,6 +70,27 @@ export class Unit {
     if (!this.goal) {
       this.bored?.(this);
     }
+  }
+}
+
+export class UnitGroup {
+  leader: Unit;
+  units = new Set<Unit>();
+  color: string;
+  palette: Palette;
+
+  constructor(leader: Unit, color: string, palette: Palette) {
+    this.leader = leader;
+    this.color = color;
+    this.palette = palette;
+
+    this.add(leader);
+  }
+
+  add(unit: Unit) {
+    unit.group = this;
+    unit.palette = this.palette;
+    this.units.add(unit);
   }
 }
 

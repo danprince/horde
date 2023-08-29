@@ -1,6 +1,6 @@
 import { wander } from "./actions";
 import { hslaToRgba, randomInt, slice } from "./engine";
-import { Unit } from "./game";
+import { Unit, UnitGroup } from "./game";
 import * as sprites from "./sprites";
 
 export function Player() {
@@ -12,7 +12,9 @@ export function Player() {
   let h = randomInt(0, 360);
   let s = randomInt(20, 40);
   let l = randomInt(40, 50);
-  unit.palette = {
+
+  let color = `hsl(${h}, ${s}%, ${l}%)`;
+  let palette = {
     // Cloth color
     [0x8a8733ff]: hslaToRgba(h, s, l),
     // Leather color
@@ -22,6 +24,8 @@ export function Player() {
     // Hair color
     [0x222034ff]: hslaToRgba(30, s, l),
   };
+
+  new UnitGroup(unit, color, palette);
 
   return unit;
 }
