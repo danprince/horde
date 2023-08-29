@@ -34,7 +34,7 @@ export function render() {
     drawSprite(sprites.shadow, unit.x, unit.y);
 
     if (unit.isLeader()) {
-      drawSprite(sprites.flag, unit.x, unit.y - unit.z - 10, game.player.palette);
+      drawSprite(sprites.flag, unit.x, unit.y - unit.z - 10, unit.palette);
     }
 
     if (unit.mount) {
