@@ -70,4 +70,8 @@ function init() {
   loop(update);
 }
 
-init();
+if (s.naturalWidth) {
+  init();
+} else {
+  s.onload = init;
+}
