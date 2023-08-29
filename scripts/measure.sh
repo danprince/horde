@@ -7,16 +7,13 @@ percent=$(echo "$size / $max_size * 100" | bc -l)
 printf "%d/%d bytes (%.2f%%)\n" "$size" "$max_size" "$percent"
 
 build_summary() {
-  printf "# Build "
-
   if (( size < max_size )); then
-    printf "✅"
+    printf "# Build ✅ (%.2f%%)" "$percent"
   else
-    printf "❌"
+    printf "# Build ❗️ (%.2f%%)" "$percent"
   fi
 
   printf "\n\n"
-
   printf "\`\`\`mermaid\n"
   printf "pie showData\n"
   printf "    \"Used (bytes)\" : %d\n" "$size"
