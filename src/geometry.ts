@@ -80,3 +80,9 @@ export function isCircleInCircle(
 ): boolean {
   return Math.hypot(x2 - x1, y2 - y1) <= r1 + r2;
 }
+
+export function getRandomPointInCircle(x: number, y: number, r: number): Point {
+  let angle = Math.random() * TWO_PI;
+  let radius = Math.random() * r;
+  return getPointOnCircle(x, y, angle, radius);
+}

@@ -8,6 +8,7 @@ export function Player() {
   unit.mount = Horse();
   unit.sprites = slice(sprites.rider, 16);
   unit.speed = 30;
+  unit.influence = 30;
 
   let h = randomInt(0, 360);
   let s = randomInt(20, 40);

@@ -75,6 +75,10 @@ export class Unit {
     return this.group?.leader === this;
   }
 
+  isWithGroup() {
+    return this.group ? this.intersects(this.group.leader) : false;
+  }
+
   intersects(unit: Unit) {
     return isCircleInCircle(
       this.x,
@@ -126,6 +130,8 @@ export class UnitGroup {
   add(unit: Unit) {
     unit.group = this;
     unit.palette = this.palette;
+    unit.speed = this.leader.speed;
+    // delete unit.goal;
     this.units.add(unit);
     this.leader.influence += 1;
   }

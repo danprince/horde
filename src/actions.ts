@@ -1,4 +1,4 @@
-import { easeInOutQuad } from "./engine";
+import { easeInOutQuad, randomInt } from "./engine";
 import { Unit } from "./game";
 
 import {
@@ -6,6 +6,7 @@ import {
   getAngleBetweenPoints,
   getDistanceBetweenPoints,
   getDirectionFromAngle,
+  getRandomPointInCircle,
   TWO_PI,
   getPointOnCircle,
 } from "./geometry";
@@ -19,6 +20,17 @@ export function moveTo(unit: Unit, position: Point) {
   let duration = (distance / unit.speed) * 1000;
   let hops = Math.floor(duration / 1000) * 3;
   let timer = 0;
+
+  if (unit.isLeader()) {
+    for (let follower of unit.group!.units) {
+      if (follower !== unit) {
+        let radius = randomInt(10, unit.influence);
+        let angle = Math.random() * TWO_PI;
+        let point = getPointOnCircle(p2.x, p2.y, angle, radius);
+        moveTo(follower, point);
+      }
+    }
+  }
 
   unit.direction = getDirectionFromAngle(angle);
   unit.heading = p2;
@@ -39,8 +51,18 @@ export function moveTo(unit: Unit, position: Point) {
 }
 
 export function wander(unit: Unit) {
-  let angle = TWO_PI * Math.random();
-  let distance = 50 + Math.random() * 50;
-  let position = getPointOnCircle(unit.x, unit.y, angle, distance);
+  let position: Point;
+
+  if (unit.isWithGroup()) {
+    return;
+  } else if (unit.group) {
+    let leader = unit.group.leader;
+    let distance = randomInt(0, leader.influence);
+    position = getRandomPointInCircle(leader.x, leader.y, distance);
+  } else {
+    let distance = 50 + Math.random() * 50;
+    position = getRandomPointInCircle(unit.x, unit.y, distance);
+  }
+
   unit.goal = () => moveTo(unit, position);
 }
