@@ -144,3 +144,7 @@ export function randomInt(min: number, max: number): number {
 export function randomElement<T>(array: T[]): T {
   return array[randomInt(0, array.length)];
 }
+
+export function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
