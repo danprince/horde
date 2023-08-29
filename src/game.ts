@@ -4,10 +4,15 @@ import { Direction, EAST, Point, Rectangle } from "./geometry";
 export class Game {
   player: Unit = undefined!;
   units = new Set<Unit>();
+  decorations = new Set<Decoration>();
 
   update(dt: number) {
     for (let unit of this.units) {
       unit.update(dt);
+    }
+
+    for (let deco of this.decorations) {
+      deco.update(dt);
     }
   }
 
@@ -15,6 +20,12 @@ export class Game {
     unit.x = x;
     unit.y = y;
     this.units.add(unit);
+  }
+
+  decorate(deco: Decoration, x: number, y: number) {
+    deco.x = x;
+    deco.y = y;
+    this.decorations.add(deco);
   }
 
   despawn(unit: Unit) {
@@ -58,6 +69,32 @@ export class Unit {
     if (!this.goal) {
       this.bored?.(this);
     }
+  }
+}
+
+export class Decoration {
+  x: number = 0;
+  y: number = 0;
+  sprite: Sprite;
+
+  private animation: Sprite[];
+  private timer: number = 0;
+  private speed: number;
+  private index: number = 0;
+
+  constructor(sprites: Sprite[], speed: number = Infinity) {
+    this.sprite = sprites[0];
+    this.animation = sprites;
+    this.speed = speed;
+  }
+
+  update(dt: number) {
+    this.timer += dt;
+    if (this.timer > this.speed) {
+      this.index = (this.index + 1) % this.animation.length;
+      this.timer = 0;
+    }
+    this.sprite = this.animation[this.index];
   }
 }
 

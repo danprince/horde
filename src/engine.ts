@@ -140,3 +140,7 @@ export function hslaToRgba(h: number, s: number, l: number, a: number = 100): nu
 export function randomInt(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min));
 }
+
+export function randomElement<T>(array: T[]): T {
+  return array[randomInt(0, array.length)];
+}

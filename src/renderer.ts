@@ -10,6 +10,12 @@ export function render() {
   ctx.save();
   ctx.translate(-view.x1, -view.y1);
 
+  for (let deco of game.decorations) {
+    if (isPointInRect(deco, view)) {
+      drawSprite(deco.sprite, deco.x, deco.y);
+    }
+  }
+
   for (let unit of game.units) {
     if (!isPointInRect(unit, view)) {
       continue;
