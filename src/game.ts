@@ -1,4 +1,4 @@
-import { Palette, Sprite, hslaToRgba, randomInt } from "./engine";
+import { Palette, Sprite } from "./engine";
 import {
   Direction,
   EAST,
@@ -70,6 +70,10 @@ export class Unit {
   influence: number = 10;
   goal?(dt: number): void;
   bored?(unit: Unit) {}
+
+  isLeader() {
+    return this.group?.leader === this;
+  }
 
   intersects(unit: Unit) {
     return isCircleInCircle(

@@ -23,6 +23,10 @@ export function render() {
 
     drawSprite(sprites.shadow, unit.x, unit.y);
 
+    if (unit.isLeader()) {
+      drawSprite(sprites.flag, unit.x, unit.y - unit.z - 10, game.player.palette);
+    }
+
     if (unit.mount) {
       drawSprite(
         unit.mount.sprites[unit.direction],
