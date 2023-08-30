@@ -1,5 +1,5 @@
 import * as sprites from "./sprites";
-import { easeInOutQuad, lerp, randomInt, slice, timer } from "./engine";
+import { easeInOutQuad, easeOutQuad, lerp, randomInt, slice, timer } from "./engine";
 import { Decoration, Projectile, Unit, game } from "./game";
 
 import {
@@ -37,13 +37,15 @@ export function moveTo(unit: Unit, position: Point) {
     }
   }
 
+  let easing = unit.heading ? easeOutQuad : easeInOutQuad;
+
   unit.direction = getDirectionFromAngle(angle);
   unit.heading = p2;
   unit.goal = dt => {
     timer += dt;
 
     let t = Math.min(1, timer / duration);
-    let k = easeInOutQuad(t);
+    let k = easing(t);
     unit.x = Math.round(p1.x + (p2.x - p1.x) * k);
     unit.y = Math.round(p1.y + (p2.y - p1.y) * k);
     unit.z = Math.round(Math.abs(Math.sin(t * Math.PI * hops)) * 2);

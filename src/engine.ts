@@ -87,6 +87,8 @@ export type Easing = (t: number) => number;
 export const easeInOutQuad: Easing = t =>
   t < 0.5 ? 2 * t * t : -2 * t * t + 4 * t - 1;
 
+export const easeOutQuad: Easing = t => -(t * (t - 2));
+
 export type Palette = Record<number, number>;
 
 let remapPaletteCache = new Map<Palette, HTMLCanvasElement>();
