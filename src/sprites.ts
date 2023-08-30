@@ -17,3 +17,4 @@ export const rock_4 = { w: 10, x: 132, url, y: 20, h: 10, };
 export const rock_5 = { w: 16, x: 128, url, y: 38, h: 13, };
 export const javelin = { w: 56, x: 7, pivot: { y: 3, x: 3, }, url, y: 53, h: 7, };
 export const skull = { w: 5, x: 7, pivot: { y: 4, x: 2, }, url, y: 60, h: 6, };
+export const horde_indicator = { w: 4, x: 12, pivot: { y: 2, x: 2, }, url, y: 60, h: 4, };

@@ -1,6 +1,6 @@
 import { clear, ctx, drawSprite } from "./engine";
 import { game } from "./game";
-import { TWO_PI, isPointInRect } from "./geometry";
+import { TWO_PI, getAngleBetweenPoints, getPointOnCircle, isPointInRect } from "./geometry";
 import * as sprites from "./sprites";
 
 export function render() {
@@ -65,6 +65,14 @@ export function render() {
     let { x, y } = game.player.heading;
     drawSprite(sprites.shadow, x, y);
     drawSprite(sprites.flag, x, y, game.player.palette);
+  }
+
+  for (let group of game.groups) {
+    if (group === game.player.group) continue;
+    let angle = getAngleBetweenPoints(game.player, group.leader) - Math.PI;
+    let radius = game.player.influence;
+    let point = getPointOnCircle(game.player.x, game.player.y, angle, radius);
+    drawSprite(sprites.horde_indicator, point.x, point.y, group.palette);
   }
 
   ctx.restore();
