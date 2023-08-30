@@ -152,6 +152,7 @@ export class UnitGroup {
   units = new Set<Unit>();
   color: string;
   palette: Palette;
+  deathwish: boolean = false;
 
   constructor(leader: Unit, color: string, palette: Palette) {
     this.leader = leader;
@@ -193,6 +194,7 @@ export class UnitGroup {
   canConsume(group: UnitGroup): boolean {
     return (
       this !== group &&
+      !group.deathwish &&
       this.leader.influence > group.leader.influence &&
       isPointInCircle(
         group.leader,

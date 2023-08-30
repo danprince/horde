@@ -35,6 +35,9 @@ export function render() {
 
     if (unit.isLeader()) {
       drawSprite(sprites.flag, unit.x, unit.y - unit.z - 10, unit.palette);
+      if (unit.group?.deathwish) {
+        drawSprite(sprites.skull, unit.x, unit.y - unit.z - 22);
+      }
     }
 
     if (unit.mount) {

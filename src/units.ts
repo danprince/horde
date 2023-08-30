@@ -42,9 +42,11 @@ export function Leader() {
   unit.influence = 30;
   unit.bored = hunt;
 
+  let deathwish = Math.random() < 0.25;
+
   let h = randomInt(0, 360);
-  let s = randomInt(20, 40);
-  let l = randomInt(40, 50);
+  let s = deathwish ? randomInt(0, 10) : randomInt(20, 40);
+  let l = deathwish ? randomInt(20, 60) : randomInt(40, 50);
 
   let color = `hsl(${h}, ${s}%, ${l}%)`;
   let palette = {
@@ -58,7 +60,8 @@ export function Leader() {
     [0x222034ff]: hslaToRgba(30, s, l),
   };
 
-  new UnitGroup(unit, color, palette);
+  let group = new UnitGroup(unit, color, palette);
+  group.deathwish = deathwish;
 
   return unit;
 }
