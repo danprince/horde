@@ -172,15 +172,13 @@ export class UnitGroup {
   }
 
   remove(unit: Unit) {
+    let leader = unit.isLeader();
     unit.group = undefined;
     unit.palette = undefined;
     unit.speed = 10;
     this.units.delete(unit);
     this.leader.influence -= 1;
-
-    if (unit.isLeader()) {
-      this.destroy();
-    }
+    if (leader) this.destroy();
   }
 
   update() {
