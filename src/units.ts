@@ -3,6 +3,12 @@ import { hslaToRgba, randomInt, slice } from "./engine";
 import { Unit, UnitGroup } from "./game";
 import * as sprites from "./sprites";
 
+const COLOR_HORSE = 0x694636ff;
+const COLOR_HORSE_HAIR = 0x45283cff;
+const COLOR_CLOTH = 0x8a8733ff;
+const COLOR_LEATHER = 0x8a6f30ff;
+const COLOR_HIGHLIGHT = 0x9b9947ff;
+
 export function Player() {
   let unit = Leader();
   delete unit.bored;
@@ -17,10 +23,8 @@ export function Horse() {
   let s = randomInt(10, 30);
   let l = randomInt(30, 60);
   unit.palette = {
-    // Horse skin color
-    [0x694636ff]: hslaToRgba(h, s, l),
-    // Horse hair color
-    [0x45283cff]: hslaToRgba(h + 20, s - 8, l - 10),
+    [COLOR_HORSE]: hslaToRgba(h, s, l),
+    [COLOR_HORSE_HAIR]: hslaToRgba(h + 20, s - 8, l - 10),
   };
 
   return unit;
@@ -49,15 +53,14 @@ export function Leader() {
   let l = honorable ? randomInt(20, 60) : randomInt(40, 50);
 
   let color = `hsl(${h}, ${s}%, ${l}%)`;
+
   let palette = {
     // Cloth color
-    [0x8a8733ff]: hslaToRgba(h, s, l),
+    [COLOR_CLOTH]: hslaToRgba(h, s, l),
     // Leather color
-    [0x8a6f30ff]: hslaToRgba(h - 15, s - 10, l - 10),
+    [COLOR_LEATHER]: hslaToRgba(h - 15, s - 10, l - 10),
     // Accent color
-    [0x9b9947ff]: hslaToRgba(h, s + 10, l + 10),
-    // Hair color
-    [0x222034ff]: hslaToRgba(30, s, l),
+    [COLOR_HIGHLIGHT]: hslaToRgba(h, s + 10, l + 10),
   };
 
   let group = new UnitGroup(unit, color, palette);
