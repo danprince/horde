@@ -85,6 +85,7 @@ export class Unit {
   group?: UnitGroup;
   influence: number = 10;
   invulnerable: boolean = false;
+  static: boolean = false;
   goal?(dt: number): void;
   bored?(unit: Unit) {}
 

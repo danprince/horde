@@ -94,3 +94,12 @@ export function SpiritRider() {
   unit.mount!.palette = group.palette;
   return unit;
 }
+
+export function Yurt() {
+  let unit = new Unit();
+  unit.sprites = [sprites.yurt];
+  unit.static = true;
+  unit.invulnerable = true;
+  unit.bored = () => {};
+  return unit;
+}

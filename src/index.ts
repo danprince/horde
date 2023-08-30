@@ -1,9 +1,14 @@
 import { loop, randomInt, resize, updateTimers } from "./engine";
 import { game } from "./game";
-import { getAngleBetweenPoints, getDirectionFromAngle } from "./geometry";
+import {
+  TWO_PI,
+  getAngleBetweenPoints,
+  getDirectionFromAngle,
+  getPointOnCircle,
+} from "./geometry";
 import { moveTo, throw_ } from "./actions";
 import { render } from "./renderer";
-import { Leader, Player, Rider, SpiritRider } from "./units";
+import { Leader, Player, Rider, SpiritRider, Yurt } from "./units";
 import { Dirt, Grass, Rock } from "./decorations";
 
 onresize = resize;
@@ -68,6 +73,20 @@ function init() {
 
   for (let i = 0; i < 20; i++) {
     game.decorate(Rock(), randomInt(0, 1000), randomInt(0, 1000));
+  }
+
+  {
+    let centerX = game.player.x || randomInt(0, 1000);
+    let centerY = game.player.y || randomInt(0, 1000);
+    for (let i = 0; i < 5; i++) {
+      let { x, y } = getPointOnCircle(
+        centerX,
+        centerY,
+        (i / 5) * TWO_PI,
+        randomInt(30, 60),
+      );
+      game.spawn(Yurt(), x, y);
+    }
   }
 
   resize();

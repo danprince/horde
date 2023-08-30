@@ -17,6 +17,8 @@ import {
 } from "./geometry";
 
 export function moveTo(unit: Unit, position: Point) {
+  if (unit.static) return;
+
   let p1 = { x: unit.x, y: unit.y };
   let p2 = { x: position.x, y: position.y };
 

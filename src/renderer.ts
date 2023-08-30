@@ -50,7 +50,7 @@ export function render() {
     }
 
     drawSprite(
-      unit.sprites[unit.direction],
+      unit.static ? unit.sprites[0] : unit.sprites[unit.direction],
       unit.x,
       unit.y - unit.z,
       unit.palette,
