@@ -3,7 +3,7 @@ import { game } from "./game";
 import { getAngleBetweenPoints, getDirectionFromAngle } from "./geometry";
 import { moveTo, throw_ } from "./actions";
 import { render } from "./renderer";
-import { Leader, Player, Rider } from "./units";
+import { Leader, Player, Rider, SpiritRider } from "./units";
 import { Dirt, Grass, Rock } from "./decorations";
 
 onresize = resize;
@@ -51,6 +51,10 @@ function init() {
 
   for (let i = 0; i < 5; i++) {
     game.spawn(Leader(), randomInt(0, 1000), randomInt(0, 1000));
+  }
+
+  for (let i = 0; i < 1; i++) {
+    game.spawn(SpiritRider(), randomInt(0, 1000), randomInt(0, 1000));
   }
 
   for (let i = 0; i < 100; i++) {

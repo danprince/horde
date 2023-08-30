@@ -1,5 +1,5 @@
-import { hunt, wander } from "./actions";
-import { hslaToRgba, randomInt, slice } from "./engine";
+import { hunt, moveTo, wander } from "./actions";
+import { Palette, hslaToRgba, randomInt, slice } from "./engine";
 import { Unit, UnitGroup } from "./game";
 import * as sprites from "./sprites";
 
@@ -8,6 +8,9 @@ const COLOR_HORSE_HAIR = 0x45283cff;
 const COLOR_CLOTH = 0x8a8733ff;
 const COLOR_LEATHER = 0x8a6f30ff;
 const COLOR_HIGHLIGHT = 0x9b9947ff;
+const COLOR_HAIR = 0x222034ff;
+const COLOR_SKIN = 0xd9a066ff;
+const COLOR_WOOD = 0x7d6429ff;
 
 export function Player() {
   let unit = Leader();
@@ -66,5 +69,28 @@ export function Leader() {
   let group = new UnitGroup(unit, color, palette);
   group.honorable = honorable;
 
+  return unit;
+}
+
+let spiritPalette: Palette = {
+  [COLOR_CLOTH]: 0x4fdaf590,
+  [COLOR_LEATHER]: 0x2c659b60,
+  [COLOR_HIGHLIGHT]: 0xa5ffff60,
+  [COLOR_HORSE]: 0x31717d60,
+  [COLOR_HORSE_HAIR]: 0x182e5560,
+  [COLOR_WOOD]: 0x182e5560,
+  [COLOR_HAIR]: 0x182e5560,
+  [COLOR_SKIN]: 0xc8f6ff60,
+};
+
+export function SpiritRider() {
+  let unit = Rider();
+  unit.speed = 60;
+  unit.invulnerable = true;
+  unit.bored = () =>
+    moveTo(unit, { x: randomInt(0, 1000), y: randomInt(0, 1000) });
+
+  let group = new UnitGroup(unit, "#4fdaf560", spiritPalette);
+  unit.mount!.palette = group.palette;
   return unit;
 }

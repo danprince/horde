@@ -84,6 +84,7 @@ export class Unit {
   palette?: Palette;
   group?: UnitGroup;
   influence: number = 10;
+  invulnerable: boolean = false;
   goal?(dt: number): void;
   bored?(unit: Unit) {}
 
@@ -125,7 +126,9 @@ export class Unit {
   }
 
   damage() {
-    game.despawn(this);
+    if (!this.invulnerable) {
+      game.despawn(this);
+    }
   }
 }
 
