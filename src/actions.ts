@@ -60,7 +60,7 @@ export function moveTo(unit: Unit, position: Point) {
 export function wander(unit: Unit) {
   let position: Point;
 
-  if (unit.isWithGroup() && !unit.isLeader()) {
+  if (unit.group?.contains(unit) && !unit.isLeader()) {
     return;
   } else if (unit.group) {
     let leader = unit.group.leader;

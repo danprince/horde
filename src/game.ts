@@ -97,10 +97,6 @@ export class Unit {
       : [];
   }
 
-  isWithGroup() {
-    return this.group ? this.intersects(this.group.leader) : false;
-  }
-
   intersects(unit: Unit) {
     return isCircleInCircle(
       this.x,
@@ -121,20 +117,6 @@ export class Unit {
 
     if (!this.goal) {
       this.bored?.(this);
-    }
-
-    if (this.group?.leader === this) {
-      this.updateInfluence();
-    }
-  }
-
-  updateInfluence() {
-    for (let unit of game.units) {
-      if (unit === this || unit.group) continue;
-
-      if (this.intersects(unit)) {
-        this.group!.add(unit);
-      }
     }
   }
 
@@ -164,6 +146,7 @@ export class UnitGroup {
   }
 
   add(unit: Unit) {
+    unit.group?.remove(unit);
     unit.group = this;
     unit.palette = this.palette;
     unit.speed = this.leader.speed;
@@ -198,6 +181,28 @@ export class UnitGroup {
         this.consume(group);
       }
     }
+
+    for (let unit of game.units) {
+      if (this.canCapture(unit)) {
+        this.add(unit);
+      }
+    }
+  }
+
+  contains(point: Point): boolean {
+    return isPointInCircle(
+      point,
+      this.leader.x,
+      this.leader.y,
+      this.leader.influence,
+    );
+  }
+
+  canCapture(unit: Unit): boolean {
+    if (unit.group === this) return false;
+    if (unit.group?.deathwish) return false;
+    if (unit.group?.contains(unit)) return false;
+    return this.contains(unit);
   }
 
   canConsume(group: UnitGroup): boolean {
