@@ -15,6 +15,7 @@ build_summary() {
 
   printf "\n\n"
   printf "\`\`\`mermaid\n"
+  printf "%%{init: {'theme': 'neutral'}}%%"
   printf "pie showData\n"
   printf "    \"Used (bytes)\" : %d\n" "$size"
   printf "    \"Free (bytes)\" : %d\n" "$((max_size - size))"
