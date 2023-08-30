@@ -178,7 +178,18 @@ export class UnitGroup {
     unit.speed = 10;
     this.units.delete(unit);
     this.leader.influence -= 1;
-    if (leader) this.destroy();
+
+    if (leader) {
+      if (this.deathwish && this.units.size > 0) {
+        this.leader = Array.from(this.units)[0];
+      } else {
+        this.destroy();
+      }
+    }
+
+    if (this.units.size === 0) {
+      this.destroy();
+    }
   }
 
   update() {
