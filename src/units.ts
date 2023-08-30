@@ -42,11 +42,11 @@ export function Leader() {
   unit.influence = 30;
   unit.bored = hunt;
 
-  let deathwish = Math.random() < 0.25;
+  let honorable = Math.random() < 0.25;
 
   let h = randomInt(0, 360);
-  let s = deathwish ? randomInt(0, 10) : randomInt(20, 40);
-  let l = deathwish ? randomInt(20, 60) : randomInt(40, 50);
+  let s = honorable ? randomInt(0, 10) : randomInt(20, 40);
+  let l = honorable ? randomInt(20, 60) : randomInt(40, 50);
 
   let color = `hsl(${h}, ${s}%, ${l}%)`;
   let palette = {
@@ -61,7 +61,7 @@ export function Leader() {
   };
 
   let group = new UnitGroup(unit, color, palette);
-  group.deathwish = deathwish;
+  group.honorable = honorable;
 
   return unit;
 }

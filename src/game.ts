@@ -134,7 +134,7 @@ export class UnitGroup {
   units = new Set<Unit>();
   color: string;
   palette: Palette;
-  deathwish: boolean = false;
+  honorable: boolean = false;
 
   constructor(leader: Unit, color: string, palette: Palette) {
     this.leader = leader;
@@ -163,7 +163,7 @@ export class UnitGroup {
     this.leader.influence -= 1;
 
     if (leader) {
-      if (this.deathwish && this.units.size > 0) {
+      if (this.honorable && this.units.size > 0) {
         this.leader = Array.from(this.units)[0];
       } else {
         this.destroy();
@@ -200,7 +200,7 @@ export class UnitGroup {
 
   canCapture(unit: Unit): boolean {
     if (unit.group === this) return false;
-    if (unit.group?.deathwish) return false;
+    if (unit.group?.honorable) return false;
     if (unit.group?.contains(unit)) return false;
     return this.contains(unit);
   }
@@ -208,7 +208,7 @@ export class UnitGroup {
   canConsume(group: UnitGroup): boolean {
     return (
       this !== group &&
-      !group.deathwish &&
+      !group.honorable &&
       this.leader.influence > group.leader.influence &&
       isPointInCircle(
         group.leader,
