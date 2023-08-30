@@ -6,6 +6,7 @@ import {
   Rectangle,
   getDistanceBetweenPoints,
   isCircleInCircle,
+  isPointInCircle,
 } from "./geometry";
 
 export class Game {
@@ -23,6 +24,10 @@ export class Game {
 
     for (let deco of this.decorations) {
       deco.update(dt);
+    }
+
+    for (let group of this.groups) {
+      group.update();
     }
   }
 
@@ -82,9 +87,6 @@ export class Unit {
   goal?(dt: number): void;
   bored?(unit: Unit) {}
 
-  invulnerabilityTimer: number = 0;
-  previousGroup?: UnitGroup;
-
   isLeader() {
     return this.group?.leader === this;
   }
@@ -124,18 +126,11 @@ export class Unit {
     if (this.group?.leader === this) {
       this.updateInfluence();
     }
-
-    this.updateTimers(dt);
-  }
-
-  updateTimers(dt: number) {
-    this.invulnerabilityTimer -= dt;
   }
 
   updateInfluence() {
     for (let unit of game.units) {
       if (unit === this || unit.group) continue;
-      if (unit.isInvulnerable() && this.group === unit.previousGroup) continue;
 
       if (this.intersects(unit)) {
         this.group!.add(unit);
@@ -147,21 +142,8 @@ export class Unit {
     return this.isLeader() && this.group!.units.size > 1;
   }
 
-  isInvulnerable() {
-    return (
-      (this.isLeader() && this.hasFollowers()) || this.invulnerabilityTimer > 0
-    );
-  }
-
   damage() {
-    if (this.isInvulnerable()) return;
-    this.invulnerabilityTimer = 3000;
-
-    if (this.group) {
-      this.group.remove(this);
-    } else {
-      game.despawn(this);
-    }
+    game.despawn(this);
   }
 }
 
@@ -194,10 +176,37 @@ export class UnitGroup {
     unit.speed = 10;
     this.units.delete(unit);
     this.leader.influence -= 1;
-    unit.previousGroup = this;
 
     if (unit.isLeader()) {
       this.destroy();
+    }
+  }
+
+  update() {
+    for (let group of game.groups) {
+      if (this.canConsume(group)) {
+        this.consume(group);
+      }
+    }
+  }
+
+  canConsume(group: UnitGroup): boolean {
+    return (
+      this !== group &&
+      this.leader.influence > group.leader.influence &&
+      isPointInCircle(
+        group.leader,
+        this.leader.x,
+        this.leader.y,
+        this.leader.influence,
+      )
+    );
+  }
+
+  consume(group: UnitGroup) {
+    group.destroy();
+    for (let unit of group.units) {
+      this.add(unit);
     }
   }
 

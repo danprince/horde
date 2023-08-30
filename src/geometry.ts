@@ -70,6 +70,15 @@ export function isPointInRect(point: Point, rect: Rectangle): boolean {
   );
 }
 
+export function isPointInCircle(
+  p: Point,
+  cx: number,
+  cy: number,
+  r: number,
+): boolean {
+  return Math.hypot(p.x - cx, p.y - cy) <= r;
+}
+
 export function isCircleInCircle(
   x1: number,
   y1: number,
