@@ -1,5 +1,6 @@
-import { loop, randomInt, resize, updateTimers } from "./engine";
-import { game } from "./game";
+import * as sprites from "./sprites";
+import { loop, randomElement, randomInt, resize, updateTimers } from "./engine";
+import { Unit, game } from "./game";
 import {
   TWO_PI,
   getAngleBetweenPoints,
@@ -60,6 +61,20 @@ function init() {
 
   for (let i = 0; i < 1; i++) {
     game.spawn(SpiritRider(), randomInt(0, 1000), randomInt(0, 1000));
+  }
+
+  for (let i = 0; i < 30; i++) {
+    let unit = new Unit();
+    unit.static = true;
+    unit.sprites = [
+      randomElement([
+        sprites.well,
+        sprites.banner,
+        sprites.totem_1,
+        sprites.totem_2,
+      ]),
+    ];
+    game.spawn(unit, randomInt(0, 1000), randomInt(0, 1000));
   }
 
   for (let i = 0; i < 100; i++) {
